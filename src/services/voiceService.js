@@ -5,7 +5,7 @@
 import {
   normalPoint, streakLeading, streakTrailing, comebackPoint, bigLeadPoint,
   closeFightPoint, tauntLines, tiedLines, trailingPoint, closingInPoint,
-  breakLines, breakPantun, pressPlayLines,
+  longDeucePoint, breakLines, breakPantun, pressPlayLines,
 } from "./voiceLines";
 
 // ── Language ──
@@ -127,6 +127,10 @@ function detectCondition(scorerTeam, _unused, scoreA, scoreB, streak, prevScoreA
   const prevScorerScore = scorerTeam === "a" ? prevScoreA : prevScoreB;
   const prevOpponentScore = scorerTeam === "a" ? prevScoreB : prevScoreA;
   const prevGap = prevScorerScore - prevOpponentScore;
+
+  // ── LONG DEUCE (Capek/Ngantuk condition) ──
+  // If both scores are 23 or above, the set has dragged on too long
+  if (scoreA >= 23 && scoreB >= 23) return "longDeuce";
 
   // ── TIED ──
   if (scoreA === scoreB && scoreA > 0) return "tied";
@@ -254,6 +258,11 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
     case "closeFight":
       line = pick(closeFightPoint[lang] || closeFightPoint.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.35 });
+      return;
+
+    case "longDeuce":
+      line = pick(longDeucePoint[lang] || longDeucePoint.en)(scorerName, opponentName);
+      enqueue(line + suffix, { pitch: 1.1, rate: 0.95 }); // a bit slower/exhausted
       return;
 
     default: // "normal"

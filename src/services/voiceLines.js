@@ -417,3 +417,31 @@ export const pressPlayLines = {
     "The set hasn't started yet! Press play to continue!",
   ],
 };
+
+// ── LONG DEUCE (Scores are very high and still going, 22+ both) ──
+export const longDeucePoint = {
+  id: [
+    (s, o) => `Ya ampun ini kapan selesainya sih! ${s} nambah poin, tapi belum kelar juga!`,
+    (s, o) => `Capek banget lihatnya! Poin buat ${s}, ayo dong buruan menangin!`,
+    (s, o) => `Asli gue ngantuk nungguinnya! ${s} poin lagi! Ayo sikat aja udah!`,
+    (s, o) => `Kalian berdua gak capek apa? ${s} poin, ayo cepet selesain!`,
+    (s, o) => `Astaga deuce terus! Poin buat ${s}! Penonton udah pada laper nih!`,
+    (s, o) => `Sumpah seru banget tapi lama banget! ${s} ambil poin! Ayo habisi!`,
+    (s, o) => `Keringat dingin ngelihatnya! ${s} masuk! Tinggal dikit lagi ya ampun!`,
+    (s, o) => `Ini main badminton apa lari maraton sih? Poin buat ${s}!`,
+    (s, o) => `Satu poin berharga buat ${s}! Ayo dong ah masa mau deuce lagi!`,
+    (s, o) => `Mending pingsan aja deh! Poin ${s}! Ayo kelarin dong!`,
+  ],
+  en: [
+    (s, o) => `Oh my goodness, when will this end! Point to ${s}!`,
+    (s, o) => `I'm exhausted just watching! ${s} scores, finish it already!`,
+    (s, o) => `This is turning into a marathon! Point for ${s}!`,
+    (s, o) => `Are you guys not tired? ${s} takes the point! Wrap it up!`,
+    (s, o) => `Deuce again?! Point to ${s}! The crowd is getting hungry!`,
+    (s, o) => `Incredible drama but so long! ${s} scores! Finish them!`,
+    (s, o) => `My nerves are shot! ${s} gets it! Just one more!`,
+    (s, o) => `Is this badminton or an endurance test? Point for ${s}!`,
+    (s, o) => `A golden point for ${s}! Please don't tell me we're going to deuce again!`,
+    (s, o) => `I can't take much more of this! Point ${s}! End it!`,
+  ],
+};
