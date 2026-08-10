@@ -357,6 +357,19 @@ export function useScoreboard() {
     }
   }, []);
 
+  // ── Resume break state on mount (after refresh) ──
+  useEffect(() => {
+    if (match.isStarted && !match.setReady && !match.matchWinner) {
+      // Small delay to ensure audio context is ready
+      setTimeout(() => {
+        startBreakMusic();
+        startBreakVoiceLoop();
+      }, 1000);
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Start Set (Play button pressed) ──
   const startSet = useCallback(() => {
     voice.clearVoiceQueue();

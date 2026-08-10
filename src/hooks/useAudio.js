@@ -81,9 +81,12 @@ export function useAudio() {
   }, []);
 
   const unduckBreakMusic = useCallback(() => {
-    if (breakAudioRef.current) {
-      breakAudioRef.current.volume = 0.5; // restore volume
-    }
+    // Add a slight delay to unduck so it doesn't jump abruptly when voice ends
+    setTimeout(() => {
+      if (breakAudioRef.current) {
+        breakAudioRef.current.volume = 0.5; // restore volume
+      }
+    }, 500);
   }, []);
 
   // Cleanup on unmount
