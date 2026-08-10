@@ -129,8 +129,9 @@ function detectCondition(scorerTeam, _unused, scoreA, scoreB, streak, prevScoreA
   const prevGap = prevScorerScore - prevOpponentScore;
 
   // ── LONG DEUCE (Capek/Ngantuk condition) ──
-  // If both scores are 23 or above, the set has dragged on too long
-  if (scoreA >= 23 && scoreB >= 23) return "longDeuce";
+  // Jika sudah deuce (20-20) lalu ada yang cetak poin (21-20, 21-21, 22-21 dst)
+  // Udah set point tapi gak kelar-kelar.
+  if (scoreA >= 20 && scoreB >= 20 && (scoreA + scoreB >= 41)) return "longDeuce";
 
   // ── TIED ──
   if (scoreA === scoreB && scoreA > 0) return "tied";
