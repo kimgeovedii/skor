@@ -95,9 +95,15 @@ async function processBackgroundRemoval(file) {
           const maxSize = 200;
           let { width, height } = img;
           if (width > height) {
-            if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
           } else {
-            if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
           }
           canvas.width = width;
           canvas.height = height;
@@ -117,12 +123,23 @@ async function processBackgroundRemoval(file) {
 /* ──── Athlete Photo Display ──── */
 function AthletePhotos({ photos, size = "md" }) {
   if (!photos || photos.length === 0) return null;
-  const sizes = { sm: "w-10 h-10", md: "w-14 h-14 md:w-16 md:h-16", lg: "w-16 h-16 md:w-20 md:h-20" };
+  const sizes = {
+    sm: "w-10 h-10",
+    md: "w-14 h-14 md:w-16 md:h-16",
+    lg: "w-16 h-16 md:w-20 md:h-20",
+  };
   return (
     <div className="flex items-center justify-center -space-x-3 mb-2">
       {photos.map((photo, i) => (
-        <div key={i} className={`${sizes[size]} rounded-full overflow-hidden border-2 border-white/20 bg-white/10 shadow-lg`}>
-          <img src={photo} alt={`Atlet ${i + 1}`} className="w-full h-full object-cover" />
+        <div
+          key={i}
+          className={`${sizes[size]} rounded-full overflow-hidden border-2 border-white/20 bg-white/10 shadow-lg`}
+        >
+          <img
+            src={photo}
+            alt={`Atlet ${i + 1}`}
+            className="w-full h-full object-cover"
+          />
         </div>
       ))}
     </div>
@@ -134,7 +151,9 @@ function PhotoUploadSlot({ index, photo, onUpload, processing }) {
   const inputRef = useRef(null);
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <label className="text-xs font-semibold text-gray-500">Atlet {index + 1}</label>
+      <label className="text-xs font-semibold text-gray-500">
+        Atlet {index + 1}
+      </label>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -148,7 +167,11 @@ function PhotoUploadSlot({ index, photo, onUpload, processing }) {
           </div>
         ) : photo ? (
           <>
-            <img src={photo} alt={`Atlet ${index + 1}`} className="w-full h-full object-cover" />
+            <img
+              src={photo}
+              alt={`Atlet ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
             </div>
@@ -195,9 +218,16 @@ function EmptyState({ onAddTeam }) {
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
         <div className="px-8 py-16 md:py-20 text-center">
           <div className="text-6xl mb-4">🏸</div>
-          <h2 className="text-white/80 text-lg md:text-xl font-bold mb-2">Belum Ada Tim</h2>
-          <p className="text-white/40 text-sm mb-6">Tambahkan minimal 2 tim untuk memulai pertandingan</p>
-          <button onClick={onAddTeam} className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+          <h2 className="text-white/80 text-lg md:text-xl font-bold mb-2">
+            Belum Ada Tim
+          </h2>
+          <p className="text-white/40 text-sm mb-6">
+            Tambahkan minimal 2 tim untuk memulai pertandingan
+          </p>
+          <button
+            onClick={onAddTeam}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
             <UserPlus className="w-5 h-5" />
             Tambah Tim
           </button>
@@ -218,11 +248,22 @@ function SingleTeamState({ player, photos, onAddTeam }) {
       <div className="bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5 relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
         <div className="px-8 py-12 md:py-16 text-center">
-          <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-4">Tim Terdaftar</p>
-          {teamPhotos.length > 0 && <AthletePhotos photos={teamPhotos} size="lg" />}
-          <h2 className="text-white text-2xl md:text-3xl font-black tracking-wider uppercase mb-6">{player.name}</h2>
-          <p className="text-white/40 text-sm mb-6">Tambahkan 1 tim lagi untuk memulai</p>
-          <button onClick={onAddTeam} className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+          <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-4">
+            Tim Terdaftar
+          </p>
+          {teamPhotos.length > 0 && (
+            <AthletePhotos photos={teamPhotos} size="lg" />
+          )}
+          <h2 className="text-white text-2xl md:text-3xl font-black tracking-wider uppercase mb-6">
+            {player.name}
+          </h2>
+          <p className="text-white/40 text-sm mb-6">
+            Tambahkan 1 tim lagi untuk memulai
+          </p>
+          <button
+            onClick={onAddTeam}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
             <UserPlus className="w-5 h-5" />
             Tambah Tim Lawan
           </button>
@@ -236,7 +277,15 @@ function SingleTeamState({ player, photos, onAddTeam }) {
 /* ══════════════════════════════════════════════
    FOOTBALL SCOREBOARD (2 players)
    ══════════════════════════════════════════════ */
-function FootballScoreboard({ players, photos, highestScore, hasWinner, animatingId, onIncrement, onDecrement }) {
+function FootballScoreboard({
+  players,
+  photos,
+  highestScore,
+  hasWinner,
+  animatingId,
+  onIncrement,
+  onDecrement,
+}) {
   const teamA = players[0];
   const teamB = players[1];
   const photosA = photos[teamA.id] || [];
@@ -249,23 +298,34 @@ function FootballScoreboard({ players, photos, highestScore, hasWinner, animatin
         <div className="relative px-4 md:px-8 py-6 md:py-8">
           <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-amber-400/80 uppercase">Badminton Match</span>
+            <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-amber-400/80 uppercase">
+              Badminton Match
+            </span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
 
           <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* Team A */}
             <div className="flex-1 flex flex-col items-center">
-              {photosA.length > 0 && <AthletePhotos photos={photosA} size="md" />}
-              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">{teamA.name}</h2>
+              {photosA.length > 0 && (
+                <AthletePhotos photos={photosA} size="md" />
+              )}
+              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">
+                {teamA.name}
+              </h2>
             </div>
 
             {/* Scores */}
             <div className="flex items-center gap-2 md:gap-4 shrink-0">
               <div className="relative">
                 <ScorePop active={animatingId === teamA.id} />
-                <div className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamA.score === highestScore && teamA.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}>
-                  <span className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamA.id ? "scale-110" : "scale-100"}`} style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}>
+                <div
+                  className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamA.score === highestScore && teamA.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}
+                >
+                  <span
+                    className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamA.id ? "scale-110" : "scale-100"}`}
+                    style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
+                  >
                     {teamA.score}
                   </span>
                 </div>
@@ -273,14 +333,21 @@ function FootballScoreboard({ players, photos, highestScore, hasWinner, animatin
 
               <div className="flex flex-col items-center gap-1">
                 <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-                <span className="text-amber-400/70 text-xs md:text-sm font-black tracking-widest">VS</span>
+                <span className="text-amber-400/70 text-xs md:text-sm font-black tracking-widest">
+                  VS
+                </span>
                 <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
               </div>
 
               <div className="relative">
                 <ScorePop active={animatingId === teamB.id} />
-                <div className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamB.score === highestScore && teamB.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}>
-                  <span className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamB.id ? "scale-110" : "scale-100"}`} style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}>
+                <div
+                  className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamB.score === highestScore && teamB.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}
+                >
+                  <span
+                    className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamB.id ? "scale-110" : "scale-100"}`}
+                    style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
+                  >
                     {teamB.score}
                   </span>
                 </div>
@@ -289,8 +356,12 @@ function FootballScoreboard({ players, photos, highestScore, hasWinner, animatin
 
             {/* Team B */}
             <div className="flex-1 flex flex-col items-center">
-              {photosB.length > 0 && <AthletePhotos photos={photosB} size="md" />}
-              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">{teamB.name}</h2>
+              {photosB.length > 0 && (
+                <AthletePhotos photos={photosB} size="md" />
+              )}
+              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">
+                {teamB.name}
+              </h2>
             </div>
           </div>
 
@@ -311,20 +382,40 @@ function FootballScoreboard({ players, photos, highestScore, hasWinner, animatin
       {/* Controls */}
       <div className="flex items-stretch justify-between gap-4 mt-5 px-2 md:px-8">
         <div className="flex-1 flex items-center justify-center gap-3">
-          <button onClick={() => onDecrement(teamA.id)} className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer" id="btn-decrement-a">
+          <button
+            onClick={() => onDecrement(teamA.id)}
+            className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+            id="btn-decrement-a"
+          >
             <Minus className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase hidden sm:block">{teamA.name}</span>
-          <button onClick={() => onIncrement(teamA.id)} className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer" id="btn-increment-a">
+          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase hidden sm:block">
+            {teamA.name}
+          </span>
+          <button
+            onClick={() => onIncrement(teamA.id)}
+            className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+            id="btn-increment-a"
+          >
             <Plus className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
         <div className="flex-1 flex items-center justify-center gap-3">
-          <button onClick={() => onDecrement(teamB.id)} className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer" id="btn-decrement-b">
+          <button
+            onClick={() => onDecrement(teamB.id)}
+            className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+            id="btn-decrement-b"
+          >
             <Minus className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase hidden sm:block">{teamB.name}</span>
-          <button onClick={() => onIncrement(teamB.id)} className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer" id="btn-increment-b">
+          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase hidden sm:block">
+            {teamB.name}
+          </span>
+          <button
+            onClick={() => onIncrement(teamB.id)}
+            className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+            id="btn-increment-b"
+          >
             <Plus className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
@@ -336,8 +427,22 @@ function FootballScoreboard({ players, photos, highestScore, hasWinner, animatin
 /* ══════════════════════════════════════════════
    MULTI-TEAM GRID (3-4 players)
    ══════════════════════════════════════════════ */
-function MultiTeamGrid({ players, photos, highestScore, hasWinner, animatingId, onIncrement, onDecrement, onRemove }) {
-  const cardColors = ["from-red-700 to-red-800", "from-slate-700 to-slate-800", "from-amber-600 to-amber-700", "from-blue-700 to-blue-800"];
+function MultiTeamGrid({
+  players,
+  photos,
+  highestScore,
+  hasWinner,
+  animatingId,
+  onIncrement,
+  onDecrement,
+  onRemove,
+}) {
+  const cardColors = [
+    "from-red-700 to-red-800",
+    "from-slate-700 to-slate-800",
+    "from-amber-600 to-amber-700",
+    "from-blue-700 to-blue-800",
+  ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full max-w-4xl mx-auto">
@@ -345,28 +450,53 @@ function MultiTeamGrid({ players, photos, highestScore, hasWinner, animatingId, 
         const teamPhotos = photos[player.id] || [];
         return (
           <div key={player.id} className="relative group">
-            <button onClick={() => onRemove(player.id)} className="absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg" title="Hapus tim">✕</button>
-            <div className={`relative bg-gradient-to-br ${cardColors[idx % cardColors.length]} rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
+            <button
+              onClick={() => onRemove(player.id)}
+              className="absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg"
+              title="Hapus tim"
+            >
+              ✕
+            </button>
+            <div
+              className={`relative bg-gradient-to-br ${cardColors[idx % cardColors.length]} rounded-2xl overflow-hidden shadow-xl border border-white/10`}
+            >
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/50 via-white/20 to-amber-400/50" />
               <div className="p-4 md:p-6 text-center">
-                {hasWinner && player.score === highestScore && player.score > 0 && (
-                  <div className="mb-1 animate-bounce"><span className="text-2xl">🏸</span></div>
+                {hasWinner &&
+                  player.score === highestScore &&
+                  player.score > 0 && (
+                    <div className="mb-1 animate-bounce">
+                      <span className="text-2xl">🏸</span>
+                    </div>
+                  )}
+                {teamPhotos.length > 0 && (
+                  <AthletePhotos photos={teamPhotos} size="sm" />
                 )}
-                {teamPhotos.length > 0 && <AthletePhotos photos={teamPhotos} size="sm" />}
-                <h3 className="text-white/80 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">{player.name}</h3>
+                <h3 className="text-white/80 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">
+                  {player.name}
+                </h3>
                 <div className="relative">
                   <ScorePop active={animatingId === player.id} />
-                  <span className={`text-5xl md:text-7xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === player.id ? "scale-110" : "scale-100"}`} style={{ textShadow: "0 0 20px rgba(255,255,255,0.1)" }}>
+                  <span
+                    className={`text-5xl md:text-7xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === player.id ? "scale-110" : "scale-100"}`}
+                    style={{ textShadow: "0 0 20px rgba(255,255,255,0.1)" }}
+                  >
                     {player.score}
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center justify-center gap-3 mt-3">
-              <button onClick={() => onDecrement(player.id)} className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer">
+              <button
+                onClick={() => onDecrement(player.id)}
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+              >
                 <Minus className="w-5 h-5" />
               </button>
-              <button onClick={() => onIncrement(player.id)} className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer">
+              <button
+                onClick={() => onIncrement(player.id)}
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+              >
                 <Plus className="w-5 h-5" />
               </button>
             </div>
@@ -421,7 +551,9 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
             Tambah Tim Baru
           </DialogTitle>
           <DialogDescription>
-            Masukkan nama tim dan foto 2 atlet. Background foto akan dihapus otomatis. Sisa slot: <strong className="text-red-600">{remaining}</strong>
+            Masukkan nama tim dan foto 2 atlet. Background foto akan dihapus
+            otomatis. Sisa slot:{" "}
+            <strong className="text-red-600">{remaining}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -438,11 +570,26 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
 
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
-              Foto Atlet <span className="text-gray-400 font-normal">(opsional)</span>
+              Foto Atlet{" "}
+              <span className="text-gray-400 font-normal">(opsional)</span>
             </label>
             <div className="flex items-center justify-center gap-6">
-              <PhotoUploadSlot index={0} photo={photo1} processing={processing1} onUpload={(file) => handlePhoto(file, setPhoto1, setProcessing1)} />
-              <PhotoUploadSlot index={1} photo={photo2} processing={processing2} onUpload={(file) => handlePhoto(file, setPhoto2, setProcessing2)} />
+              <PhotoUploadSlot
+                index={0}
+                photo={photo1}
+                processing={processing1}
+                onUpload={(file) =>
+                  handlePhoto(file, setPhoto1, setProcessing1)
+                }
+              />
+              <PhotoUploadSlot
+                index={1}
+                photo={photo2}
+                processing={processing2}
+                onUpload={(file) =>
+                  handlePhoto(file, setPhoto2, setProcessing2)
+                }
+              />
             </div>
             {isProcessing && (
               <p className="text-xs text-amber-600 mt-2 text-center flex items-center justify-center gap-1.5">
@@ -454,10 +601,24 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
 
           <DialogFooter className="gap-2">
             <DialogClose>
-              <Button type="button" variant="outline" className="rounded-xl border-gray-200 cursor-pointer">Batal</Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl border-gray-200 cursor-pointer"
+              >
+                Batal
+              </Button>
             </DialogClose>
-            <Button type="submit" disabled={!name.trim() || isProcessing} className="bg-red-600 hover:bg-red-500 text-white rounded-xl px-6 cursor-pointer disabled:opacity-30 shadow-md shadow-red-200">
-              {isProcessing ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Plus className="w-4 h-4 mr-1.5" />}
+            <Button
+              type="submit"
+              disabled={!name.trim() || isProcessing}
+              className="bg-red-600 hover:bg-red-500 text-white rounded-xl px-6 cursor-pointer disabled:opacity-30 shadow-md shadow-red-200"
+            >
+              {isProcessing ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-1.5" />
+              )}
               Tambah
             </Button>
           </DialogFooter>
@@ -496,9 +657,15 @@ function App() {
 
   const playSound = useCallback((type) => {
     try {
-      const audio = type === "increment" ? audioIncRef.current : audioDecRef.current;
-      if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
-    } catch { /* ignore */ }
+      const audio =
+        type === "increment" ? audioIncRef.current : audioDecRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const triggerAnimation = useCallback((id) => {
@@ -506,19 +673,31 @@ function App() {
     setTimeout(() => setAnimatingId(null), 600);
   }, []);
 
-  const handleIncrement = useCallback((id) => {
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, score: p.score + 1 } : p)));
-    playSound("increment");
-    triggerAnimation(id);
-  }, [playSound, triggerAnimation, setPlayers]);
+  const handleIncrement = useCallback(
+    (id) => {
+      setPlayers((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, score: p.score + 1 } : p)),
+      );
+      playSound("increment");
+      triggerAnimation(id);
+    },
+    [playSound, triggerAnimation, setPlayers],
+  );
 
-  const handleDecrement = useCallback((id) => {
-    const player = players.find((p) => p.id === id);
-    if (player && player.score <= 0) return;
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, score: Math.max(0, p.score - 1) } : p)));
-    playSound("decrement");
-    triggerAnimation(id);
-  }, [playSound, triggerAnimation, setPlayers, players]);
+  const handleDecrement = useCallback(
+    (id) => {
+      const player = players.find((p) => p.id === id);
+      if (player && player.score <= 0) return;
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, score: Math.max(0, p.score - 1) } : p,
+        ),
+      );
+      playSound("decrement");
+      triggerAnimation(id);
+    },
+    [playSound, triggerAnimation, setPlayers, players],
+  );
 
   const resetAll = useCallback(() => {
     setPlayers((prev) => prev.map((p) => ({ ...p, score: 0 })));
@@ -531,26 +710,40 @@ function App() {
     setPhotos({});
   }, [setPlayers, setPhotos]);
 
-  const addPlayer = useCallback((name, playerPhotos = []) => {
-    if (players.length >= 4) return;
-    const id = Date.now();
-    setPlayers((prev) => [...prev, { id, name, score: 0, color: colorCycle[prev.length % colorCycle.length] }]);
-    if (playerPhotos.length > 0) {
-      setPhotos((prev) => ({ ...prev, [id]: playerPhotos }));
-    }
-    if (players.length + 1 >= 2) {
-      setDialogOpen(false);
-    }
-  }, [players.length, setPlayers, setPhotos]);
+  const addPlayer = useCallback(
+    (name, playerPhotos = []) => {
+      if (players.length >= 4) return;
+      const id = Date.now();
+      setPlayers((prev) => [
+        ...prev,
+        {
+          id,
+          name,
+          score: 0,
+          color: colorCycle[prev.length % colorCycle.length],
+        },
+      ]);
+      if (playerPhotos.length > 0) {
+        setPhotos((prev) => ({ ...prev, [id]: playerPhotos }));
+      }
+      if (players.length + 1 >= 2) {
+        setDialogOpen(false);
+      }
+    },
+    [players.length, setPlayers, setPhotos],
+  );
 
-  const removePlayer = useCallback((id) => {
-    setPlayers((prev) => prev.filter((p) => p.id !== id));
-    setPhotos((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  }, [setPlayers, setPhotos]);
+  const removePlayer = useCallback(
+    (id) => {
+      setPlayers((prev) => prev.filter((p) => p.id !== id));
+      setPhotos((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    },
+    [setPlayers, setPhotos],
+  );
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -574,17 +767,34 @@ function App() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-100/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="fixed top-2 left-4 text-2xl opacity-15 pointer-events-none z-30">🇮🇩</div>
-      <div className="fixed top-2 right-14 text-2xl opacity-15 pointer-events-none z-30">🇮🇩</div>
+      <div className="fixed top-2 left-4 text-2xl opacity-15 pointer-events-none z-30">
+        🇮🇩
+      </div>
+      <div className="fixed top-2 right-14 text-2xl opacity-15 pointer-events-none z-30">
+        🇮🇩
+      </div>
 
       <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
         {players.length < 4 && players.length >= 2 && (
-          <button onClick={() => setDialogOpen(true)} className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer" title="Tambah tim">
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
+            title="Tambah tim"
+          >
             <UserPlus className="w-5 h-5" />
           </button>
         )}
-        <button onClick={toggleFullscreen} className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer" id="btn-fullscreen" title={isFullscreen ? "Keluar fullscreen" : "Mode fullscreen"}>
-          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+        <button
+          onClick={toggleFullscreen}
+          className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
+          id="btn-fullscreen"
+          title={isFullscreen ? "Keluar fullscreen" : "Mode fullscreen"}
+        >
+          {isFullscreen ? (
+            <Minimize className="w-5 h-5" />
+          ) : (
+            <Maximize className="w-5 h-5" />
+          )}
         </button>
       </div>
 
@@ -598,13 +808,23 @@ function App() {
               </div>
               <span className="text-2xl md:text-3xl">🇮🇩</span>
             </div>
-            <p className="text-red-400 text-[0.6rem] font-semibold tracking-[0.3em] uppercase">17 Agustus 2026</p>
+            <p className="text-red-400 text-[0.6rem] font-semibold tracking-[0.3em] uppercase">
+              17 Agustus 2026
+            </p>
           </div>
           <div className="flex items-center justify-center gap-3 mb-1">
-            <img src="/logo.png" alt="Logo" className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-md" />
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-10 h-10 md:w-36 md:h-14 object-contain drop-shadow-md"
+            />
           </div>
-          <h1 className="text-xl md:text-3xl font-black bg-gradient-to-r from-red-700 via-red-600 to-red-700 bg-clip-text text-transparent tracking-tight">Turnamen Badminton</h1>
-          <p className="text-red-500/60 text-xs md:text-sm font-bold tracking-widest uppercase">PT LPP Agro Nusantara</p>
+          <h1 className="text-xl md:text-3xl font-black bg-gradient-to-r from-red-700 via-red-600 to-red-700 bg-clip-text text-transparent tracking-tight">
+            Turnamen Badminton
+          </h1>
+          <p className="text-red-500/60 text-xs md:text-sm font-bold tracking-widest uppercase">
+            PT LPP Agro Nusantara
+          </p>
           <div className="flex items-center justify-center gap-3 mt-2">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-red-300" />
             <span className="text-amber-500 text-sm">★</span>
@@ -612,22 +832,57 @@ function App() {
           </div>
         </header>
 
-        {players.length === 0 && <EmptyState onAddTeam={() => setDialogOpen(true)} />}
-        {players.length === 1 && <SingleTeamState player={players[0]} photos={photos} onAddTeam={() => setDialogOpen(true)} />}
+        {players.length === 0 && (
+          <EmptyState onAddTeam={() => setDialogOpen(true)} />
+        )}
+        {players.length === 1 && (
+          <SingleTeamState
+            player={players[0]}
+            photos={photos}
+            onAddTeam={() => setDialogOpen(true)}
+          />
+        )}
         {players.length === 2 && (
-          <FootballScoreboard players={players} photos={photos} highestScore={highestScore} hasWinner={hasWinner} animatingId={animatingId} onIncrement={handleIncrement} onDecrement={handleDecrement} />
+          <FootballScoreboard
+            players={players}
+            photos={photos}
+            highestScore={highestScore}
+            hasWinner={hasWinner}
+            animatingId={animatingId}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+          />
         )}
         {players.length > 2 && (
-          <MultiTeamGrid players={players} photos={photos} highestScore={highestScore} hasWinner={hasWinner} animatingId={animatingId} onIncrement={handleIncrement} onDecrement={handleDecrement} onRemove={removePlayer} />
+          <MultiTeamGrid
+            players={players}
+            photos={photos}
+            highestScore={highestScore}
+            hasWinner={hasWinner}
+            animatingId={animatingId}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+            onRemove={removePlayer}
+          />
         )}
 
         {players.length >= 2 && (
           <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-            <Button onClick={resetAll} variant="outline" className="bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 rounded-xl px-5 cursor-pointer shadow-sm text-sm" id="btn-reset-all">
+            <Button
+              onClick={resetAll}
+              variant="outline"
+              className="bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 rounded-xl px-5 cursor-pointer shadow-sm text-sm"
+              id="btn-reset-all"
+            >
               <RotateCcw className="w-4 h-4 mr-1.5" />
               Reset Skor
             </Button>
-            <Button onClick={clearStorage} variant="outline" className="bg-white hover:bg-red-50 text-red-500 border-red-200 hover:border-red-400 rounded-xl px-5 cursor-pointer shadow-sm text-sm" id="btn-clear-storage">
+            <Button
+              onClick={clearStorage}
+              variant="outline"
+              className="bg-white hover:bg-red-50 text-red-500 border-red-200 hover:border-red-400 rounded-xl px-5 cursor-pointer shadow-sm text-sm"
+              id="btn-clear-storage"
+            >
               <Trash2 className="w-4 h-4 mr-1.5" />
               Hapus Semua Tim
             </Button>
@@ -636,11 +891,18 @@ function App() {
 
         <footer className="text-center mt-8 text-red-300 text-[0.65rem] space-y-0.5">
           <p>Data tersimpan otomatis di browser • Maksimal 4 tim</p>
-          <p className="text-red-300/70 font-semibold tracking-wider">MERDEKA! 🇮🇩</p>
+          <p className="text-red-300/70 font-semibold tracking-wider">
+            MERDEKA! 🇮🇩
+          </p>
         </footer>
       </div>
 
-      <AddTeamDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={addPlayer} teamCount={players.length} />
+      <AddTeamDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onAdd={addPlayer}
+        teamCount={players.length}
+      />
     </div>
   );
 }
