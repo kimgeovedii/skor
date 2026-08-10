@@ -21,12 +21,14 @@ import {
   Upload,
   Loader2,
   Camera,
+  Pencil,
 } from "lucide-react";
 
 const STORAGE_KEY = "skor-turnamen-badminton";
 const PHOTOS_KEY = "skor-turnamen-photos";
-const SOUND_INCREMENT = "/audio/ssstik.io_1786355463088.mp3";
+const SOUND_INCREMENT = "/audio/fahhhhhhhhhhhhhh.mp3";
 const SOUND_DECREMENT = "/audio/fahhhhhhhhhhhhhh.mp3";
+const PHOTO_MAX_SIZE = 400; // px — larger for better quality
 
 function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -37,20 +39,18 @@ function useLocalStorage(key, initialValue) {
       return initialValue;
     }
   });
-
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
-      // ignore quota
+      /* quota */
     }
   }, [key, value]);
-
   return [value, setValue];
 }
 
 /* ──── Resize image helper ──── */
-function resizeImage(file, maxSize = 200) {
+function resizeImage(file, maxSize = PHOTO_MAX_SIZE) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -72,7 +72,7 @@ function resizeImage(file, maxSize = 200) {
         canvas.width = width;
         canvas.height = height;
         canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.7));
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
       };
       img.src = e.target.result;
     };
@@ -92,30 +92,29 @@ async function processBackgroundRemoval(file) {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const maxSize = 200;
           let { width, height } = img;
           if (width > height) {
-            if (width > maxSize) {
-              height = (height * maxSize) / width;
-              width = maxSize;
+            if (width > PHOTO_MAX_SIZE) {
+              height = (height * PHOTO_MAX_SIZE) / width;
+              width = PHOTO_MAX_SIZE;
             }
           } else {
-            if (height > maxSize) {
-              width = (width * maxSize) / height;
-              height = maxSize;
+            if (height > PHOTO_MAX_SIZE) {
+              width = (width * PHOTO_MAX_SIZE) / height;
+              height = PHOTO_MAX_SIZE;
             }
           }
           canvas.width = width;
           canvas.height = height;
           canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/png", 0.8));
+          resolve(canvas.toDataURL("image/png", 0.9));
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(blob);
     });
   } catch (err) {
-    console.error("BG removal failed, using original:", err);
+    console.error("BG removal failed:", err);
     return resizeImage(file);
   }
 }
@@ -124,16 +123,16 @@ async function processBackgroundRemoval(file) {
 function AthletePhotos({ photos, size = "md" }) {
   if (!photos || photos.length === 0) return null;
   const sizes = {
-    sm: "w-10 h-10",
-    md: "w-14 h-14 md:w-16 md:h-16",
-    lg: "w-16 h-16 md:w-20 md:h-20",
+    sm: "w-12 h-12",
+    md: "w-20 h-20 md:w-24 md:h-24",
+    lg: "w-24 h-24 md:w-32 md:h-32",
   };
   return (
-    <div className="flex items-center justify-center -space-x-3 mb-2">
+    <div className="flex items-center justify-center -space-x-4 mb-2">
       {photos.map((photo, i) => (
         <div
           key={i}
-          className={`${sizes[size]} rounded-full overflow-hidden border-2 border-white/20 bg-white/10 shadow-lg`}
+          className={`${sizes[size]} rounded-full overflow-hidden border-3 border-white/25 bg-white/10 shadow-xl ring-1 ring-black/5`}
         >
           <img
             src={photo}
@@ -147,7 +146,13 @@ function AthletePhotos({ photos, size = "md" }) {
 }
 
 /* ──── Photo Upload Slot ──── */
-function PhotoUploadSlot({ index, photo, onUpload, processing }) {
+function PhotoUploadSlot({
+  index,
+  photo,
+  onUpload,
+  processing,
+  onRemovePhoto,
+}) {
   const inputRef = useRef(null);
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -183,6 +188,15 @@ function PhotoUploadSlot({ index, photo, onUpload, processing }) {
           </div>
         )}
       </button>
+      {photo && !processing && (
+        <button
+          type="button"
+          onClick={onRemovePhoto}
+          className="text-[0.6rem] text-red-400 hover:text-red-600 cursor-pointer"
+        >
+          Hapus foto
+        </button>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -228,8 +242,7 @@ function EmptyState({ onAddTeam }) {
             onClick={onAddTeam}
             className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <UserPlus className="w-5 h-5" />
-            Tambah Tim
+            <UserPlus className="w-5 h-5" /> Tambah Tim
           </button>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
@@ -241,7 +254,7 @@ function EmptyState({ onAddTeam }) {
 /* ══════════════════════════════════════════════
    SINGLE TEAM STATE
    ══════════════════════════════════════════════ */
-function SingleTeamState({ player, photos, onAddTeam }) {
+function SingleTeamState({ player, photos, onAddTeam, onEdit }) {
   const teamPhotos = photos[player.id] || [];
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -254,18 +267,25 @@ function SingleTeamState({ player, photos, onAddTeam }) {
           {teamPhotos.length > 0 && (
             <AthletePhotos photos={teamPhotos} size="lg" />
           )}
-          <h2 className="text-white text-2xl md:text-3xl font-black tracking-wider uppercase mb-6">
-            {player.name}
-          </h2>
-          <p className="text-white/40 text-sm mb-6">
+          <button
+            onClick={() => onEdit(player)}
+            className="group cursor-pointer bg-transparent border-none"
+          >
+            <h2 className="text-white text-2xl md:text-3xl font-black tracking-wider uppercase mb-1 group-hover:text-amber-400 transition-colors">
+              {player.name}
+            </h2>
+            <span className="text-white/30 text-[0.6rem] flex items-center justify-center gap-1 group-hover:text-amber-400/60">
+              <Pencil className="w-3 h-3" /> Klik untuk edit
+            </span>
+          </button>
+          <p className="text-white/40 text-sm mb-6 mt-4">
             Tambahkan 1 tim lagi untuk memulai
           </p>
           <button
             onClick={onAddTeam}
             className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <UserPlus className="w-5 h-5" />
-            Tambah Tim Lawan
+            <UserPlus className="w-5 h-5" /> Tambah Tim Lawan
           </button>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
@@ -285,6 +305,7 @@ function FootballScoreboard({
   animatingId,
   onIncrement,
   onDecrement,
+  onEdit,
 }) {
   const teamA = players[0];
   const teamB = players[1];
@@ -296,6 +317,7 @@ function FootballScoreboard({
       <div className="relative bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
         <div className="relative px-4 md:px-8 py-6 md:py-8">
+          {/* Match label */}
           <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-amber-400/80 uppercase">
@@ -305,15 +327,21 @@ function FootballScoreboard({
           </div>
 
           <div className="flex items-center justify-between gap-2 md:gap-4">
-            {/* Team A */}
-            <div className="flex-1 flex flex-col items-center">
+            {/* Team A — clickable for edit */}
+            <button
+              onClick={() => onEdit(teamA)}
+              className="flex-1 flex flex-col items-center cursor-pointer bg-transparent border-none group hover:scale-105 transition-transform"
+            >
               {photosA.length > 0 && (
-                <AthletePhotos photos={photosA} size="md" />
+                <AthletePhotos photos={photosA} size="lg" />
               )}
-              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">
+              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full group-hover:text-amber-400 transition-colors">
                 {teamA.name}
               </h2>
-            </div>
+              <span className="text-white/20 text-[0.5rem] mt-1 flex items-center gap-1 group-hover:text-amber-400/50">
+                <Pencil className="w-2.5 h-2.5" /> edit
+              </span>
+            </button>
 
             {/* Scores */}
             <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -330,7 +358,6 @@ function FootballScoreboard({
                   </span>
                 </div>
               </div>
-
               <div className="flex flex-col items-center gap-1">
                 <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
                 <span className="text-amber-400/70 text-xs md:text-sm font-black tracking-widest">
@@ -338,7 +365,6 @@ function FootballScoreboard({
                 </span>
                 <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
               </div>
-
               <div className="relative">
                 <ScorePop active={animatingId === teamB.id} />
                 <div
@@ -354,15 +380,21 @@ function FootballScoreboard({
               </div>
             </div>
 
-            {/* Team B */}
-            <div className="flex-1 flex flex-col items-center">
+            {/* Team B — clickable for edit */}
+            <button
+              onClick={() => onEdit(teamB)}
+              className="flex-1 flex flex-col items-center cursor-pointer bg-transparent border-none group hover:scale-105 transition-transform"
+            >
               {photosB.length > 0 && (
-                <AthletePhotos photos={photosB} size="md" />
+                <AthletePhotos photos={photosB} size="lg" />
               )}
-              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full">
+              <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full group-hover:text-amber-400 transition-colors">
                 {teamB.name}
               </h2>
-            </div>
+              <span className="text-white/20 text-[0.5rem] mt-1 flex items-center gap-1 group-hover:text-amber-400/50">
+                <Pencil className="w-2.5 h-2.5" /> edit
+              </span>
+            </button>
           </div>
 
           {hasWinner && (
@@ -436,6 +468,7 @@ function MultiTeamGrid({
   onIncrement,
   onDecrement,
   onRemove,
+  onEdit,
 }) {
   const cardColors = [
     "from-red-700 to-red-800",
@@ -443,7 +476,6 @@ function MultiTeamGrid({
     "from-amber-600 to-amber-700",
     "from-blue-700 to-blue-800",
   ];
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full max-w-4xl mx-auto">
       {players.map((player, idx) => {
@@ -461,7 +493,10 @@ function MultiTeamGrid({
               className={`relative bg-gradient-to-br ${cardColors[idx % cardColors.length]} rounded-2xl overflow-hidden shadow-xl border border-white/10`}
             >
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/50 via-white/20 to-amber-400/50" />
-              <div className="p-4 md:p-6 text-center">
+              <button
+                onClick={() => onEdit(player)}
+                className="w-full p-4 md:p-6 text-center cursor-pointer bg-transparent border-none"
+              >
                 {hasWinner &&
                   player.score === highestScore &&
                   player.score > 0 && (
@@ -470,12 +505,15 @@ function MultiTeamGrid({
                     </div>
                   )}
                 {teamPhotos.length > 0 && (
-                  <AthletePhotos photos={teamPhotos} size="sm" />
+                  <AthletePhotos photos={teamPhotos} size="md" />
                 )}
-                <h3 className="text-white/80 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">
+                <h3 className="text-white/80 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2 hover:text-amber-400 transition-colors">
                   {player.name}
                 </h3>
-                <div className="relative">
+                <span className="text-white/20 text-[0.5rem] flex items-center justify-center gap-1">
+                  <Pencil className="w-2.5 h-2.5" /> edit
+                </span>
+                <div className="relative mt-2">
                   <ScorePop active={animatingId === player.id} />
                   <span
                     className={`text-5xl md:text-7xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === player.id ? "scale-110" : "scale-100"}`}
@@ -484,7 +522,7 @@ function MultiTeamGrid({
                     {player.score}
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
             <div className="flex items-center justify-center gap-3 mt-3">
               <button
@@ -508,14 +546,37 @@ function MultiTeamGrid({
 }
 
 /* ══════════════════════════════════════════════
-   ADD TEAM DIALOG
+   ADD / EDIT TEAM DIALOG (shared)
    ══════════════════════════════════════════════ */
-function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
+function TeamDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  teamCount,
+  editingTeam,
+  existingPhotos,
+}) {
+  const isEdit = !!editingTeam;
   const [name, setName] = useState("");
   const [photo1, setPhoto1] = useState(null);
   const [photo2, setPhoto2] = useState(null);
   const [processing1, setProcessing1] = useState(false);
   const [processing2, setProcessing2] = useState(false);
+
+  // Populate fields when editing
+  useEffect(() => {
+    if (open && editingTeam) {
+      setName(editingTeam.name);
+      const ep = existingPhotos || [];
+      setPhoto1(ep[0] || null);
+      setPhoto2(ep[1] || null);
+    } else if (open && !editingTeam) {
+      setName("");
+      setPhoto1(null);
+      setPhoto2(null);
+    }
+  }, [open, editingTeam, existingPhotos]);
+
   const remaining = 4 - teamCount;
 
   const handlePhoto = async (file, setPhoto, setProcessing) => {
@@ -534,10 +595,12 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
     e.preventDefault();
     if (!name.trim()) return;
     const teamPhotos = [photo1, photo2].filter(Boolean);
-    onAdd(name.trim(), teamPhotos);
-    setName("");
-    setPhoto1(null);
-    setPhoto2(null);
+    onSubmit(name.trim(), teamPhotos);
+    if (!isEdit) {
+      setName("");
+      setPhoto1(null);
+      setPhoto2(null);
+    }
   };
 
   const isProcessing = processing1 || processing2;
@@ -547,13 +610,26 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
       <DialogContent className="sm:max-w-md bg-white border-red-100 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-red-700 text-lg flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
-            Tambah Tim Baru
+            {isEdit ? (
+              <>
+                <Pencil className="w-5 h-5" /> Edit Tim
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-5 h-5" /> Tambah Tim Baru
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
-            Masukkan nama tim dan foto 2 atlet. Background foto akan dihapus
-            otomatis. Sisa slot:{" "}
-            <strong className="text-red-600">{remaining}</strong>
+            {isEdit ? (
+              "Ubah nama tim atau ganti foto atlet."
+            ) : (
+              <>
+                Masukkan nama tim dan foto 2 atlet. Background foto akan dihapus
+                otomatis. Sisa slot:{" "}
+                <strong className="text-red-600">{remaining}</strong>
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -581,6 +657,7 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
                 onUpload={(file) =>
                   handlePhoto(file, setPhoto1, setProcessing1)
                 }
+                onRemovePhoto={() => setPhoto1(null)}
               />
               <PhotoUploadSlot
                 index={1}
@@ -589,12 +666,13 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
                 onUpload={(file) =>
                   handlePhoto(file, setPhoto2, setProcessing2)
                 }
+                onRemovePhoto={() => setPhoto2(null)}
               />
             </div>
             {isProcessing && (
               <p className="text-xs text-amber-600 mt-2 text-center flex items-center justify-center gap-1.5">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                Menghapus background foto... (proses pertama lebih lama)
+                <Loader2 className="w-3 h-3 animate-spin" /> Menghapus
+                background foto...
               </p>
             )}
           </div>
@@ -616,10 +694,12 @@ function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
             >
               {isProcessing ? (
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              ) : isEdit ? (
+                <Pencil className="w-4 h-4 mr-1.5" />
               ) : (
                 <Plus className="w-4 h-4 mr-1.5" />
               )}
-              Tambah
+              {isEdit ? "Simpan" : "Tambah"}
             </Button>
           </DialogFooter>
         </form>
@@ -637,9 +717,9 @@ function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [animatingId, setAnimatingId] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTeam, setEditingTeam] = useState(null); // null = add mode, object = edit mode
   const audioIncRef = useRef(null);
   const audioDecRef = useRef(null);
-
   const colorCycle = ["red", "white", "gold", "blue"];
 
   useEffect(() => {
@@ -710,27 +790,59 @@ function App() {
     setPhotos({});
   }, [setPlayers, setPhotos]);
 
-  const addPlayer = useCallback(
+  // Opens dialog in add mode
+  const openAddDialog = useCallback(() => {
+    setEditingTeam(null);
+    setDialogOpen(true);
+  }, []);
+
+  // Opens dialog in edit mode
+  const openEditDialog = useCallback((player) => {
+    setEditingTeam(player);
+    setDialogOpen(true);
+  }, []);
+
+  // Handles both add and edit
+  const handleDialogSubmit = useCallback(
     (name, playerPhotos = []) => {
-      if (players.length >= 4) return;
-      const id = Date.now();
-      setPlayers((prev) => [
-        ...prev,
-        {
-          id,
-          name,
-          score: 0,
-          color: colorCycle[prev.length % colorCycle.length],
-        },
-      ]);
-      if (playerPhotos.length > 0) {
-        setPhotos((prev) => ({ ...prev, [id]: playerPhotos }));
-      }
-      if (players.length + 1 >= 2) {
+      if (editingTeam) {
+        // EDIT MODE
+        setPlayers((prev) =>
+          prev.map((p) => (p.id === editingTeam.id ? { ...p, name } : p)),
+        );
+        setPhotos((prev) => {
+          const next = { ...prev };
+          if (playerPhotos.length > 0) {
+            next[editingTeam.id] = playerPhotos;
+          } else {
+            delete next[editingTeam.id];
+          }
+          return next;
+        });
         setDialogOpen(false);
+        setEditingTeam(null);
+      } else {
+        // ADD MODE
+        if (players.length >= 4) return;
+        const id = Date.now();
+        setPlayers((prev) => [
+          ...prev,
+          {
+            id,
+            name,
+            score: 0,
+            color: colorCycle[prev.length % colorCycle.length],
+          },
+        ]);
+        if (playerPhotos.length > 0) {
+          setPhotos((prev) => ({ ...prev, [id]: playerPhotos }));
+        }
+        if (players.length + 1 >= 2) {
+          setDialogOpen(false);
+        }
       }
     },
-    [players.length, setPlayers, setPhotos],
+    [editingTeam, players.length, setPlayers, setPhotos],
   );
 
   const removePlayer = useCallback(
@@ -777,7 +889,7 @@ function App() {
       <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
         {players.length < 4 && players.length >= 2 && (
           <button
-            onClick={() => setDialogOpen(true)}
+            onClick={openAddDialog}
             className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
             title="Tambah tim"
           >
@@ -816,7 +928,7 @@ function App() {
             <img
               src="/logo.png"
               alt="Logo"
-              className="w-10 h-10 md:w-36 md:h-14 object-contain drop-shadow-md"
+              className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-md"
             />
           </div>
           <h1 className="text-xl md:text-3xl font-black bg-gradient-to-r from-red-700 via-red-600 to-red-700 bg-clip-text text-transparent tracking-tight">
@@ -832,14 +944,13 @@ function App() {
           </div>
         </header>
 
-        {players.length === 0 && (
-          <EmptyState onAddTeam={() => setDialogOpen(true)} />
-        )}
+        {players.length === 0 && <EmptyState onAddTeam={openAddDialog} />}
         {players.length === 1 && (
           <SingleTeamState
             player={players[0]}
             photos={photos}
-            onAddTeam={() => setDialogOpen(true)}
+            onAddTeam={openAddDialog}
+            onEdit={openEditDialog}
           />
         )}
         {players.length === 2 && (
@@ -851,6 +962,7 @@ function App() {
             animatingId={animatingId}
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
+            onEdit={openEditDialog}
           />
         )}
         {players.length > 2 && (
@@ -863,6 +975,7 @@ function App() {
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
             onRemove={removePlayer}
+            onEdit={openEditDialog}
           />
         )}
 
@@ -874,8 +987,7 @@ function App() {
               className="bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 rounded-xl px-5 cursor-pointer shadow-sm text-sm"
               id="btn-reset-all"
             >
-              <RotateCcw className="w-4 h-4 mr-1.5" />
-              Reset Skor
+              <RotateCcw className="w-4 h-4 mr-1.5" /> Reset Skor
             </Button>
             <Button
               onClick={clearStorage}
@@ -883,8 +995,7 @@ function App() {
               className="bg-white hover:bg-red-50 text-red-500 border-red-200 hover:border-red-400 rounded-xl px-5 cursor-pointer shadow-sm text-sm"
               id="btn-clear-storage"
             >
-              <Trash2 className="w-4 h-4 mr-1.5" />
-              Hapus Semua Tim
+              <Trash2 className="w-4 h-4 mr-1.5" /> Hapus Semua Tim
             </Button>
           </div>
         )}
@@ -897,11 +1008,17 @@ function App() {
         </footer>
       </div>
 
-      <AddTeamDialog
+      {/* Shared Add/Edit Dialog */}
+      <TeamDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onAdd={addPlayer}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditingTeam(null);
+        }}
+        onSubmit={handleDialogSubmit}
         teamCount={players.length}
+        editingTeam={editingTeam}
+        existingPhotos={editingTeam ? photos[editingTeam.id] : []}
       />
     </div>
   );
