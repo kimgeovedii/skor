@@ -1002,12 +1002,7 @@ function App() {
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-red-100/50 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-100/20 rounded-full blur-3xl" />
       </div>
-      <div className="fixed top-2 left-4 text-2xl opacity-15 pointer-events-none z-30">
-        🇮🇩
-      </div>
-      <div className="fixed top-2 right-14 text-2xl opacity-15 pointer-events-none z-30">
-        🇮🇩
-      </div>
+
 
       <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
         {players.length < 4 && players.length >= 2 && (
@@ -1037,11 +1032,9 @@ function App() {
         <header className="text-center mb-6 md:mb-8">
           <div className="inline-flex flex-col items-center gap-1 mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-2xl md:text-3xl">🇮🇩</span>
               <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-[0.6rem] md:text-xs font-bold tracking-widest uppercase px-4 py-1 rounded-full shadow-lg shadow-red-300/30">
                 DIRGAHAYU REPUBLIK INDONESIA KE-81
               </div>
-              <span className="text-2xl md:text-3xl">🇮🇩</span>
             </div>
             <p className="text-red-400 text-[0.6rem] font-semibold tracking-[0.3em] uppercase">
               17 Agustus 2026
@@ -1137,7 +1130,7 @@ function App() {
         <footer className="text-center mt-8 text-red-300 text-[0.65rem] space-y-0.5">
           <p>Data tersimpan otomatis di browser • Maksimal 4 tim</p>
           <p className="text-red-300/70 font-semibold tracking-wider">
-            MERDEKA! 🇮🇩
+            MERDEKA!
           </p>
         </footer>
       </div>
