@@ -418,30 +418,38 @@ export const pressPlayLines = {
   ],
 };
 
-// ── LONG DEUCE (Scores are very high and still going, 22+ both) ──
-export const longDeucePoint = {
+// ── LONG DEUCE TIED (Deuce 21-21, 22-22, etc) ──
+export const longDeuceTied = {
   id: [
-    (s, o) => `Ya ampun ini kapan selesainya sih! ${s} nambah poin, tapi belum kelar juga!`,
-    (s, o) => `Capek banget lihatnya! Poin buat ${s}, ayo dong buruan menangin!`,
-    (s, o) => `Asli gue ngantuk nungguinnya! ${s} poin lagi! Ayo sikat aja udah!`,
-    (s, o) => `Kalian berdua gak capek apa? ${s} poin, ayo cepet selesain!`,
-    (s, o) => `Astaga deuce terus! Poin buat ${s}! Penonton udah pada laper nih!`,
-    (s, o) => `Sumpah seru banget tapi lama banget! ${s} ambil poin! Ayo habisi!`,
-    (s, o) => `Keringat dingin ngelihatnya! ${s} masuk! Tinggal dikit lagi ya ampun!`,
-    (s, o) => `Ini main badminton apa lari maraton sih? Poin buat ${s}!`,
-    (s, o) => `Satu poin berharga buat ${s}! Ayo dong ah masa mau deuce lagi!`,
-    (s, o) => `Mending pingsan aja deh! Poin ${s}! Ayo kelarin dong!`,
+    (s, o) => `Ya ampun balik deuce lagi! ${s} nahan imbang nih, ${o} geregetan pasti pengen buru-buru kelar!`,
+    (s, o) => `Capek banget lihatnya! ${s} maksa deuce lagi! Kalian berdua mau nginep di lapangan apa gimana?`,
+    (s, o) => `Asli gue ngantuk nungguinnya! Skor sama kuat lagi, ${s} nahan laju ${o}! Ayo salah satu ngalah napa!`,
+    (s, o) => `Kalian berdua gak capek apa? Deuce mulu daritadi! Suporternya udah pada laper tuh nungguin!`,
+    (s, o) => `Astaga deuce terus! Poin krusial diamankan ${s}! ${o} mulai emosi nih kayaknya!`,
   ],
   en: [
-    (s, o) => `Oh my goodness, when will this end! Point to ${s}!`,
-    (s, o) => `I'm exhausted just watching! ${s} scores, finish it already!`,
-    (s, o) => `This is turning into a marathon! Point for ${s}!`,
-    (s, o) => `Are you guys not tired? ${s} takes the point! Wrap it up!`,
-    (s, o) => `Deuce again?! Point to ${s}! The crowd is getting hungry!`,
-    (s, o) => `Incredible drama but so long! ${s} scores! Finish them!`,
-    (s, o) => `My nerves are shot! ${s} gets it! Just one more!`,
-    (s, o) => `Is this badminton or an endurance test? Point for ${s}!`,
-    (s, o) => `A golden point for ${s}! Please don't tell me we're going to deuce again!`,
-    (s, o) => `I can't take much more of this! Point ${s}! End it!`,
+    (s, o) => `Oh my goodness, deuce again! ${s} levels it up! ${o} must be frustrated!`,
+    (s, o) => `I'm exhausted just watching! ${s} forces another deuce! Are you guys planning to sleep here?`,
+    (s, o) => `This is turning into a marathon! Tied again thanks to ${s}! Someone please win!`,
+    (s, o) => `Are you guys not tired? Deuce after deuce! The crowd is getting hungry!`,
+    (s, o) => `Deuce again?! ${s} refuses to lose! ${o} needs to wrap this up!`,
+  ],
+};
+
+// ── LONG DEUCE ADVANTAGE (Set point / Match point beyond 20) ──
+export const longDeuceAdvantage = {
+  id: [
+    (s, o) => `Akhirnya ${s} unggul lagi! Ayo dong ${o} masa nyerah gitu aja, kejar lagi biar tambah lama!`,
+    (s, o) => `Ini main badminton apa tarik tambang sih! Tarik ulur terus! ${s} di atas angin, ${o} deg-degan parah!`,
+    (s, o) => `Sumpah seru banget tapi kelamaan! ${s} ambil poin! ${o} nafasnya udah ngos-ngosan belum tuh?`,
+    (s, o) => `Keringat dingin ngelihatnya! ${s} unggul! ${o} ayo tahan dong masa dibiarin lepas!`,
+    (s, o) => `Mending pingsan aja deh gue! Poin buat ${s}! ${o} butuh mukjizat nih biar bisa balik deuce!`,
+  ],
+  en: [
+    (s, o) => `Finally ${s} takes the lead! Come on ${o}, don't give up now, let's make it even longer!`,
+    (s, o) => `Is this a tug of war? ${s} has the advantage! ${o} must be sweating bullets!`,
+    (s, o) => `Incredible drama but so long! ${s} takes the point! Is ${o} out of breath yet?`,
+    (s, o) => `My nerves are shot! ${s} gets ahead! ${o} has to defend with their life!`,
+    (s, o) => `I can't take much more of this! Advantage ${s}! ${o} needs a miracle right now!`,
   ],
 };

@@ -5,7 +5,7 @@
 import {
   normalPoint, streakLeading, streakTrailing, comebackPoint, bigLeadPoint,
   closeFightPoint, tauntLines, tiedLines, trailingPoint, closingInPoint,
-  longDeucePoint, breakLines, breakPantun, pressPlayLines,
+  longDeuceTied, longDeuceAdvantage, breakLines, breakPantun, pressPlayLines,
 } from "./voiceLines";
 
 // ── Language ──
@@ -160,7 +160,10 @@ function detectCondition(scorerTeam, _unused, scoreA, scoreB, streak, prevScoreA
   // ── LONG DEUCE (Capek/Ngantuk condition) ──
   // Jika sudah deuce (20-20) lalu ada yang cetak poin (21-20, 21-21, 22-21 dst)
   // Udah set point tapi gak kelar-kelar.
-  if (scoreA >= 20 && scoreB >= 20 && (scoreA + scoreB >= 41)) return "longDeuce";
+  if (scoreA >= 20 && scoreB >= 20 && (scoreA + scoreB >= 41)) {
+    if (scoreA === scoreB) return "longDeuceTied";
+    return "longDeuceAdvantage";
+  }
 
   // ── TIED ──
   if (scoreA === scoreB && scoreA > 0) return "tied";
@@ -234,17 +237,70 @@ export function announceIntro(teamA, teamB, matchType, onIntroDone) {
   onVoiceDone(() => { introPlaying = false; onIntroDone?.(); });
 }
 
-/** Early point during intro */
 export function announceEarlyPoint() {
-  clearVoiceQueue(); introPlaying = false;
+  introPlaying = false;
   enqueue(pick(earlyPointLines[currentLang] || earlyPointLines.en), { rate: 1.0, pitch: 1.4 });
 }
 
 /**
  * Smart score announcement — picks the right tone based on ACTUAL game situation.
  */
+export function announceConditionOnly(scorerName, opponentName, scoreA, scoreB, streak = 0, scorerTeam = "a", prevScoreA = 0, prevScoreB = 0) {
+  const condition = detectCondition(scorerTeam, null, scoreA, scoreB, streak, prevScoreA, prevScoreB);
+  const lang = currentLang;
+  
+  // Early points don't have a special smart condition line in the normal flow (handled separately)
+  if (condition === "normal" || condition === "earlyPoint") return;
+
+  let line;
+  switch (condition) {
+    case "streakLeading":
+      line = pick(streakLeading[lang] || streakLeading.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.5 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      break;
+    case "streakTrailing":
+      line = pick(streakTrailing[lang] || streakTrailing.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.3 });
+      break;
+    case "comeback":
+      line = pick(comebackPoint[lang] || comebackPoint.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.4 });
+      break;
+    case "tied":
+      // Tied is usually handled by announceScoreEqual anyway, but just in case:
+      line = pick(tiedLines[lang] || tiedLines.en)(scorerName);
+      enqueue(line, { pitch: 1.3 });
+      break;
+    case "bigLead":
+      line = pick(bigLeadPoint[lang] || bigLeadPoint.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.2 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      break;
+    case "trailing":
+      line = pick(trailingPoint[lang] || trailingPoint.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.1 });
+      break;
+    case "closingIn":
+      line = pick(closingInPoint[lang] || closingInPoint.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.35 });
+      break;
+    case "closeFight":
+      line = pick(closeFightPoint[lang] || closeFightPoint.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.35 });
+      break;
+    case "longDeuceTied":
+      line = pick(longDeuceTied[lang] || longDeuceTied.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.1, rate: 0.95 });
+      break;
+    case "longDeuceAdvantage":
+      line = pick(longDeuceAdvantage[lang] || longDeuceAdvantage.en)(scorerName, opponentName);
+      enqueue(line, { pitch: 1.15, rate: 0.95 });
+      break;
+  }
+}
+
 export function announceScore(scorerName, opponentName, teamAName, teamBName, scoreA, scoreB, streak = 0, scorerTeam = "a", prevScoreA = 0, prevScoreB = 0) {
-  clearVoiceQueue();
   const condition = detectCondition(scorerTeam, null, scoreA, scoreB, streak, prevScoreA, prevScoreB);
   const lang = currentLang;
   const suffix = ` ${scoreSuffix(teamAName, teamBName, scoreA, scoreB)}`;
@@ -293,9 +349,13 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
       enqueue(line + suffix, { pitch: 1.35 });
       return;
 
-    case "longDeuce":
-      line = pick(longDeucePoint[lang] || longDeucePoint.en)(scorerName, opponentName);
+    case "longDeuceTied":
+      line = pick(longDeuceTied[lang] || longDeuceTied.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.1, rate: 0.95 }); // a bit slower/exhausted
+      return;
+    case "longDeuceAdvantage":
+      line = pick(longDeuceAdvantage[lang] || longDeuceAdvantage.en)(scorerName, opponentName);
+      enqueue(line + suffix, { pitch: 1.15, rate: 0.95 }); // a bit slower/exhausted
       return;
 
     default: // "normal"
@@ -309,7 +369,6 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
 }
 
 export function announceScoreEqual(scorerName, opponentName, score, streak = 0) {
-  clearVoiceQueue();
   const lang = currentLang;
   if (streak >= 3) {
     const line = pick(streakPoint[lang] || streakPoint.en)(scorerName, opponentName);
@@ -321,7 +380,6 @@ export function announceScoreEqual(scorerName, opponentName, score, streak = 0) 
 }
 
 export function announceDeuce(scorerName) {
-  clearVoiceQueue();
   const lang = currentLang;
   const text = lang === "id"
     ? `Poin untuk ${scorerName}! Jus! Seru banget pertandingan ini!`
@@ -330,7 +388,6 @@ export function announceDeuce(scorerName) {
 }
 
 export function announceSetPoint(teamName, teamAName, teamBName, scoreA, scoreB) {
-  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -340,7 +397,6 @@ export function announceSetPoint(teamName, teamAName, teamBName, scoreA, scoreB)
 }
 
 export function announceMatchPoint(teamName, teamAName, teamBName, scoreA, scoreB) {
-  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -350,7 +406,6 @@ export function announceMatchPoint(teamName, teamAName, teamBName, scoreA, score
 }
 
 export function announceInterval(teamAName, teamBName, scoreA, scoreB) {
-  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -360,7 +415,6 @@ export function announceInterval(teamAName, teamBName, scoreA, scoreB) {
 }
 
 export function announceSetWon(teamName, setNumber, teamAName, teamBName, scoreA, scoreB) {
-  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -370,7 +424,6 @@ export function announceSetWon(teamName, setNumber, teamAName, teamBName, scoreA
 }
 
 export function announceMatchWon(teamName, playerNames) {
-  clearVoiceQueue();
   const lang = currentLang;
   const join = lang === "id" ? " dan " : " and ";
   const text = lang === "id"
@@ -380,7 +433,6 @@ export function announceMatchWon(teamName, playerNames) {
 }
 
 export function announceCelebration() {
-  clearVoiceQueue();
   const text = currentLang === "id"
     ? "Untuk merayakan, kita joget dulu!"
     : "Let's celebrate! Time to dance!";

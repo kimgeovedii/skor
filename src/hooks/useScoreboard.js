@@ -91,8 +91,14 @@ export function useScoreboard(activeTournamentId) {
       triggerAnimation(team);
       triggerBumper(team, scoringTeamName, getTeamPhotos(team));
 
+      // Was intro playing?
+      const wasIntro = voice.isIntroPlaying();
+
+      // Clear queue at the start of ANY point so it interrupts immediately!
+      voice.clearVoiceQueue();
+
       // If intro is still playing, interrupt with "anjir belum apa-apa"
-      if (voice.isIntroPlaying()) {
+      if (wasIntro) {
         voice.announceEarlyPoint();
         // Also start timer now since match has effectively begun
         setMatch((prev) => ({
@@ -136,10 +142,13 @@ export function useScoreboard(activeTournamentId) {
         voice.announceSetWon(winnerName, match.currentSet + 1, teamAName, teamBName, newScoreA, newScoreB);
         voice.announceCelebration();
       } else if (analysis.matchPointTeam) {
+        voice.announceConditionOnly(scoringTeamName, opponentName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
         voice.announceMatchPoint(getTeamName(analysis.matchPointTeam), teamAName, teamBName, newScoreA, newScoreB);
       } else if (analysis.setPointTeam) {
+        voice.announceConditionOnly(scoringTeamName, opponentName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
         voice.announceSetPoint(getTeamName(analysis.setPointTeam), teamAName, teamBName, newScoreA, newScoreB);
       } else if (analysis.isDeuce) {
+        voice.announceConditionOnly(scoringTeamName, opponentName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
         voice.announceDeuce(scoringTeamName);
       } else if (analysis.isInterval) {
         voice.announceInterval(teamAName, teamBName, newScoreA, newScoreB);
