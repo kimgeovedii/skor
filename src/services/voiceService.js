@@ -244,6 +244,7 @@ export function announceEarlyPoint() {
  * Smart score announcement — picks the right tone based on ACTUAL game situation.
  */
 export function announceScore(scorerName, opponentName, teamAName, teamBName, scoreA, scoreB, streak = 0, scorerTeam = "a", prevScoreA = 0, prevScoreB = 0) {
+  clearVoiceQueue();
   const condition = detectCondition(scorerTeam, null, scoreA, scoreB, streak, prevScoreA, prevScoreB);
   const lang = currentLang;
   const suffix = ` ${scoreSuffix(teamAName, teamBName, scoreA, scoreB)}`;
@@ -308,6 +309,7 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
 }
 
 export function announceScoreEqual(scorerName, opponentName, score, streak = 0) {
+  clearVoiceQueue();
   const lang = currentLang;
   if (streak >= 3) {
     const line = pick(streakPoint[lang] || streakPoint.en)(scorerName, opponentName);
@@ -319,6 +321,7 @@ export function announceScoreEqual(scorerName, opponentName, score, streak = 0) 
 }
 
 export function announceDeuce(scorerName) {
+  clearVoiceQueue();
   const lang = currentLang;
   const text = lang === "id"
     ? `Poin untuk ${scorerName}! Jus! Seru banget pertandingan ini!`
@@ -327,6 +330,7 @@ export function announceDeuce(scorerName) {
 }
 
 export function announceSetPoint(teamName, teamAName, teamBName, scoreA, scoreB) {
+  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -336,6 +340,7 @@ export function announceSetPoint(teamName, teamAName, teamBName, scoreA, scoreB)
 }
 
 export function announceMatchPoint(teamName, teamAName, teamBName, scoreA, scoreB) {
+  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -345,6 +350,7 @@ export function announceMatchPoint(teamName, teamAName, teamBName, scoreA, score
 }
 
 export function announceInterval(teamAName, teamBName, scoreA, scoreB) {
+  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -354,6 +360,7 @@ export function announceInterval(teamAName, teamBName, scoreA, scoreB) {
 }
 
 export function announceSetWon(teamName, setNumber, teamAName, teamBName, scoreA, scoreB) {
+  clearVoiceQueue();
   const lang = currentLang;
   const suffix = scoreSuffix(teamAName, teamBName, scoreA, scoreB);
   const text = lang === "id"
@@ -363,6 +370,7 @@ export function announceSetWon(teamName, setNumber, teamAName, teamBName, scoreA
 }
 
 export function announceMatchWon(teamName, playerNames) {
+  clearVoiceQueue();
   const lang = currentLang;
   const join = lang === "id" ? " dan " : " and ";
   const text = lang === "id"
@@ -372,6 +380,7 @@ export function announceMatchWon(teamName, playerNames) {
 }
 
 export function announceCelebration() {
+  clearVoiceQueue();
   const text = currentLang === "id"
     ? "Untuk merayakan, kita joget dulu!"
     : "Let's celebrate! Time to dance!";
