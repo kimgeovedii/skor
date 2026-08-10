@@ -3,8 +3,8 @@
  * Uses voiceLines.js bank for variety — Gen Z style.
  */
 import {
-  normalPoint, streakPoint, comebackPoint, bigLeadPoint,
-  closeFightPoint, tauntLines, tiedLines,
+  normalPoint, streakLeading, streakTrailing, comebackPoint, bigLeadPoint,
+  closeFightPoint, tauntLines, tiedLines, trailingPoint, closingInPoint,
   breakLines, breakPantun, pressPlayLines,
 } from "./voiceLines";
 
@@ -110,36 +110,53 @@ const earlyPointLines = {
 // ══════════════════════════════════
 
 /**
- * Determine the "mood" of a point based on context.
- * This is what makes the announcements varied and fun!
+ * SCORE-AWARE CONDITION DETECTION
+ * 
+ * Determines the "mood" of a point by looking at:
+ * 1. WHO is actually leading/trailing (not just who scored)
+ * 2. The size of the gap (big lead vs close fight)
+ * 3. Streak context (dominating vs fighting back)
+ * 4. Whether the gap is growing or shrinking
  */
-function detectCondition(scorerTeam, opponentTeam, scoreA, scoreB, streak, prevScoreA, prevScoreB) {
-  const isTeamA = true; // scorer's score is based on who scored
-  const scorerScore = scorerTeam === "scorer" ? scoreA : scoreB; // placeholder, we use raw scores
-  const diff = Math.abs(scoreA - scoreB);
-  const leadingTeam = scoreA > scoreB ? "a" : scoreB > scoreA ? "b" : null;
-  const prevDiff = prevScoreA - prevScoreB; // positive = A was leading
-  const nowDiff = scoreA - scoreB;
+function detectCondition(scorerTeam, _unused, scoreA, scoreB, streak, prevScoreA, prevScoreB) {
+  // Calculate from scorer's perspective
+  const scorerScore = scorerTeam === "a" ? scoreA : scoreB;
+  const opponentScore = scorerTeam === "a" ? scoreB : scoreA;
+  const gap = scorerScore - opponentScore; // positive = scorer leads, negative = scorer trails
+  
+  const prevScorerScore = scorerTeam === "a" ? prevScoreA : prevScoreB;
+  const prevOpponentScore = scorerTeam === "a" ? prevScoreB : prevScoreA;
+  const prevGap = prevScorerScore - prevOpponentScore;
 
-  // Streak
-  if (streak >= 3) return "streak";
-
-  // Comeback: team was behind by 3+ and now tied or took lead
-  const wasTrailing = (scorerTeam === "a" && prevDiff < -2) || (scorerTeam === "b" && prevDiff > 2);
-  const nowLevel = scoreA === scoreB;
-  const nowLeading = (scorerTeam === "a" && nowDiff > 0) || (scorerTeam === "b" && nowDiff < 0);
-  if (wasTrailing && (nowLevel || nowLeading)) return "comeback";
-
-  // Tied
+  // ── TIED ──
   if (scoreA === scoreB && scoreA > 0) return "tied";
 
-  // Big lead (5+ points difference)
-  if (diff >= 5) return "bigLead";
+  // ── STREAK (3+ consecutive) — context matters! ──
+  if (streak >= 3) {
+    if (gap > 0) return "streakLeading";   // streak AND winning → domination
+    if (gap < 0) return "streakTrailing";  // streak but STILL behind → fighting back
+    return "tied"; // streak brought them to tied
+  }
 
-  // Close fight (both above 10, within 2 points)
-  if (scoreA >= 10 && scoreB >= 10 && diff <= 2) return "closeFight";
+  // ── COMEBACK: was behind 3+, now tied or took lead ──
+  if (prevGap <= -3 && gap >= 0) return "comeback";
 
-  // Normal
+  // ── SCORER IS LEADING ──
+  if (gap > 0) {
+    if (gap >= 5) return "bigLead";  // big lead (5+) → domination
+    if (scoreA >= 10 && scoreB >= 10 && gap <= 2) return "closeFight";  // high score, tight
+    return "normal"; // just ahead
+  }
+
+  // ── SCORER IS TRAILING ──
+  if (gap < 0) {
+    const absGap = Math.abs(gap);
+    if (absGap >= 4) return "trailing";     // far behind (4+) → "masih jauh bro"
+    if (absGap <= 3 && absGap < Math.abs(prevGap)) return "closingIn";  // gap shrinking
+    if (scoreA >= 10 && scoreB >= 10 && absGap <= 2) return "closeFight";  // high score, tight
+    return "normal";
+  }
+
   return "normal";
 }
 
@@ -188,8 +205,7 @@ export function announceEarlyPoint() {
 }
 
 /**
- * Smart score announcement — picks the right tone based on game situation.
- * @param {string} scorerTeam - "a" or "b"
+ * Smart score announcement — picks the right tone based on ACTUAL game situation.
  */
 export function announceScore(scorerName, opponentName, teamAName, teamBName, scoreA, scoreB, streak = 0, scorerTeam = "a", prevScoreA = 0, prevScoreB = 0) {
   const condition = detectCondition(scorerTeam, null, scoreA, scoreB, streak, prevScoreA, prevScoreB);
@@ -198,11 +214,15 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
 
   let line;
   switch (condition) {
-    case "streak":
-      line = pick(streakPoint[lang] || streakPoint.en)(scorerName, opponentName);
+    case "streakLeading":
+      line = pick(streakLeading[lang] || streakLeading.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.5 });
-      // Always taunt opponent on streak
       enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      return;
+
+    case "streakTrailing":
+      line = pick(streakTrailing[lang] || streakTrailing.en)(scorerName, opponentName);
+      enqueue(line + suffix, { pitch: 1.3 });
       return;
 
     case "comeback":
@@ -218,8 +238,17 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
     case "bigLead":
       line = pick(bigLeadPoint[lang] || bigLeadPoint.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.2 });
-      // Taunt opponent when big lead
       enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      return;
+
+    case "trailing":
+      line = pick(trailingPoint[lang] || trailingPoint.en)(scorerName, opponentName);
+      enqueue(line + suffix, { pitch: 1.1 });
+      return;
+
+    case "closingIn":
+      line = pick(closingInPoint[lang] || closingInPoint.en)(scorerName, opponentName);
+      enqueue(line + suffix, { pitch: 1.35 });
       return;
 
     case "closeFight":
@@ -230,7 +259,6 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
     default: // "normal"
       line = pick(normalPoint[lang] || normalPoint.en)(scorerName, opponentName);
       enqueue(line + suffix);
-      // 25% chance to taunt opponent on normal point
       if (Math.random() < 0.25) {
         enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
       }
