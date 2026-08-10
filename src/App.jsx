@@ -29,6 +29,7 @@ const PHOTOS_KEY = "skor-turnamen-photos";
 const SOUND_INCREMENT = "/audio/fahhhhhhhhhhhhhh.mp3";
 const SOUND_DECREMENT = "/audio/fahhhhhhhhhhhhhh.mp3";
 const PHOTO_MAX_SIZE = 400;
+const DEFAULT_AVATAR = "/default-athlete.png";
 
 function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -347,114 +348,124 @@ function FootballScoreboard({
   const photosA = photos[teamA.id] || [];
   const photosB = photos[teamB.id] || [];
 
-  return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="relative bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
-        <div className="relative px-4 md:px-8 py-6 md:py-8">
-          <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-amber-400/80 uppercase">
-              Badminton Match
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          </div>
+  const TeamPanel = ({ team, teamPhotos, side }) => {
+    // Build display photos: use uploaded photos or default avatars
+    const displayPhotos = [
+      teamPhotos[0] || DEFAULT_AVATAR,
+      teamPhotos[1] || DEFAULT_AVATAR,
+    ];
 
-          <div className="flex items-center justify-between gap-2 md:gap-4">
-            {/* Team A */}
-            <div className="flex-1 flex flex-col items-center">
-              <AthletePhotos
-                photos={photosA}
-                size="lg"
-                onClickPhoto={(i) => onEditPhoto(teamA.id, i)}
-              />
-              <button
-                onClick={() => onEditName(teamA)}
-                className="cursor-pointer bg-transparent border-none group"
-              >
-                <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full group-hover:text-amber-400 transition-colors">
-                  {teamA.name}
-                </h2>
-                <span className="text-white/20 text-[0.5rem] flex items-center justify-center gap-1 group-hover:text-amber-400/50">
-                  <Pencil className="w-2.5 h-2.5" /> edit nama
-                </span>
-              </button>
+    return (
+    <div className={`flex-1 flex flex-col items-center justify-center py-6 md:py-10 px-4 md:px-8 ${side === "left" ? "bg-gradient-to-r from-[#0f1923] to-[#162033]" : "bg-gradient-to-l from-[#0f1923] to-[#162033]"}`}>
+      {/* Photos — always show 2 avatars */}
+      <div className="flex items-center justify-center -space-x-4 mb-3">
+        {displayPhotos.map((photo, i) => (
+          <button
+            key={i}
+            onClick={() => onEditPhoto(team.id, i)}
+            className={`w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden border-3 ${teamPhotos[i] ? "border-white/20" : "border-white/10"} bg-white/10 shadow-xl cursor-pointer hover:ring-2 hover:ring-amber-400/50 hover:scale-105 transition-all group relative`}
+            title={teamPhotos[i] ? `Ganti foto atlet ${i + 1}` : `Upload foto atlet ${i + 1}`}
+          >
+            <img src={photo} alt={`Atlet ${i + 1}`} className={`w-full h-full object-cover ${!teamPhotos[i] ? "opacity-40" : ""}`} />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+              <Camera className="w-5 h-5 text-white" />
             </div>
+          </button>
+        ))}
+      </div>
 
-            {/* Scores */}
-            <div className="flex items-center gap-2 md:gap-4 shrink-0">
+      {/* Team Name */}
+      <button
+        onClick={() => onEditName(team)}
+        className="cursor-pointer bg-transparent border-none group text-center"
+      >
+        <h2 className="text-white text-lg md:text-2xl lg:text-3xl font-black tracking-wider uppercase group-hover:text-amber-400 transition-colors leading-tight">
+          {team.name}
+        </h2>
+        <span className="text-white/15 text-[0.5rem] flex items-center justify-center gap-1 mt-1 group-hover:text-amber-400/40 transition-colors">
+          <Pencil className="w-2.5 h-2.5" /> edit
+        </span>
+      </button>
+    </div>
+    );
+  };
+
+  return (
+    <div className="w-full max-w-6xl mx-auto">
+      {/* Main Scoreboard */}
+      <div className="relative bg-gradient-to-b from-[#141b2d] to-[#0d1321] rounded-2xl overflow-hidden shadow-2xl shadow-black/30 border border-white/5">
+        {/* Top accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-amber-400 to-red-600" />
+
+        {/* Match label bar */}
+        <div className="bg-gradient-to-r from-red-700 via-red-600 to-red-700 py-1.5 px-4 flex items-center justify-center">
+          <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-white/90 uppercase">
+            🏸 Badminton Match
+          </span>
+        </div>
+
+        {/* Score Area */}
+        <div className="flex items-stretch">
+          {/* Team A Panel */}
+          <TeamPanel team={teamA} teamPhotos={photosA} side="left" />
+
+          {/* Center Score */}
+          <div className="flex items-center justify-center bg-gradient-to-b from-[#0a0f1a] to-[#0d1321] px-4 md:px-8 lg:px-12 relative">
+            {/* Vertical dividers */}
+            <div className="absolute left-0 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+            <div className="absolute right-0 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+
+            <div className="flex items-center gap-3 md:gap-5">
+              {/* Score A */}
               <div className="relative">
                 <ScorePop active={animatingId === teamA.id} />
-                <div
-                  className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamA.score === highestScore && teamA.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}
+                <span
+                  className={`text-6xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamA.id ? "scale-125" : "scale-100"} ${hasWinner && teamA.score === highestScore && teamA.score > 0 ? "text-amber-400" : ""}`}
+                  style={{ textShadow: "0 0 40px rgba(255,255,255,0.1)" }}
                 >
-                  <span
-                    className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamA.id ? "scale-110" : "scale-100"}`}
-                    style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
-                  >
-                    {teamA.score}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-                <span className="text-amber-400/70 text-xs md:text-sm font-black tracking-widest">
-                  VS
+                  {teamA.score}
                 </span>
-                <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
               </div>
+
+              {/* Separator */}
+              <div className="flex flex-col items-center gap-1">
+                <div className="w-1 h-1 rounded-full bg-amber-400/60" />
+                <div className="w-1 h-1 rounded-full bg-amber-400/60" />
+              </div>
+
+              {/* Score B */}
               <div className="relative">
                 <ScorePop active={animatingId === teamB.id} />
-                <div
-                  className={`w-20 h-24 md:w-32 md:h-40 lg:w-36 lg:h-44 flex items-center justify-center bg-gradient-to-b from-white/15 to-white/5 rounded-2xl border border-white/10 ${hasWinner && teamB.score === highestScore && teamB.score > 0 ? "ring-2 ring-amber-400/50" : ""} transition-all duration-300`}
+                <span
+                  className={`text-6xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamB.id ? "scale-125" : "scale-100"} ${hasWinner && teamB.score === highestScore && teamB.score > 0 ? "text-amber-400" : ""}`}
+                  style={{ textShadow: "0 0 40px rgba(255,255,255,0.1)" }}
                 >
-                  <span
-                    className={`text-5xl md:text-8xl lg:text-9xl font-black tabular-nums text-white transition-transform duration-200 ${animatingId === teamB.id ? "scale-110" : "scale-100"}`}
-                    style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
-                  >
-                    {teamB.score}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Team B */}
-            <div className="flex-1 flex flex-col items-center">
-              <AthletePhotos
-                photos={photosB}
-                size="lg"
-                onClickPhoto={(i) => onEditPhoto(teamB.id, i)}
-              />
-              <button
-                onClick={() => onEditName(teamB)}
-                className="cursor-pointer bg-transparent border-none group"
-              >
-                <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate max-w-full group-hover:text-amber-400 transition-colors">
-                  {teamB.name}
-                </h2>
-                <span className="text-white/20 text-[0.5rem] flex items-center justify-center gap-1 group-hover:text-amber-400/50">
-                  <Pencil className="w-2.5 h-2.5" /> edit nama
+                  {teamB.score}
                 </span>
-              </button>
+              </div>
             </div>
           </div>
 
-          {hasWinner && (
-            <div className="flex items-center justify-center mt-4 md:mt-6">
-              <div className="flex items-center gap-2 bg-amber-400/10 border border-amber-400/20 rounded-full px-4 py-1.5">
-                <span className="text-lg">🏸</span>
-                <span className="text-amber-400 text-xs font-bold tracking-wider uppercase">
-                  {players.find((p) => p.score === highestScore)?.name} Unggul
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Team B Panel */}
+          <TeamPanel team={teamB} teamPhotos={photosB} side="right" />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
+
+        {/* Winner bar */}
+        {hasWinner && (
+          <div className="bg-gradient-to-r from-amber-600/20 via-amber-500/30 to-amber-600/20 py-1.5 flex items-center justify-center gap-2">
+            <span className="text-sm">🏸</span>
+            <span className="text-amber-400 text-[0.65rem] md:text-xs font-bold tracking-widest uppercase">
+              {players.find((p) => p.score === highestScore)?.name} Unggul
+            </span>
+          </div>
+        )}
+
+        {/* Bottom accent */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-amber-400 to-red-600" />
       </div>
 
       {/* Controls */}
-      <div className="flex items-stretch justify-between gap-4 mt-5 px-2 md:px-8">
+      <div className="flex items-stretch justify-between gap-6 mt-5 px-4 md:px-16">
         <div className="flex-1 flex items-center justify-center gap-3">
           <button
             onClick={() => onDecrement(teamA.id)}
@@ -851,9 +862,9 @@ function App() {
 
   useEffect(() => {
     audioIncRef.current = new Audio(SOUND_INCREMENT);
-    audioIncRef.current.volume = 0.5;
+    audioIncRef.current.volume = 1.0;
     audioDecRef.current = new Audio(SOUND_DECREMENT);
-    audioDecRef.current.volume = 0.5;
+    audioDecRef.current.volume = 1.0;
   }, []);
 
   useEffect(() => {
