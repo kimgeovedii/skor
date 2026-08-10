@@ -9,13 +9,17 @@ import * as voice from "@/services/voiceService";
  * Central match state management hook.
  * Handles badminton scoring with sets, voice-over, break music, and animations.
  */
-export function useScoreboard() {
-  const [match, setMatch] = useLocalStorage(STORAGE_KEY, createInitialMatch());
-  const [photos, setPhotos] = useLocalStorage(PHOTOS_KEY, {});
+export function useScoreboard(activeTournamentId) {
+  // Use dynamic keys based on the active tournament ID to keep data separated
+  const storageKey = `skor-turnamen-badminton-v2-${activeTournamentId}`;
+  const photosKey = `skor-turnamen-photos-${activeTournamentId}`;
+
+  const [match, setMatch] = useLocalStorage(storageKey, createInitialMatch());
+  const [photos, setPhotos] = useLocalStorage(photosKey, {});
   const [animatingTeam, setAnimatingTeam] = useState(null);
   const [bumper, setBumper] = useState(null);
   const { 
-    playDana, playRevisi, playCelebrate, 
+    playDana, playRevisi, playCelebrate, playSpiderman,
     startBreakMusic, stopBreakMusic,
     duckBreakMusic, unduckBreakMusic 
   } = useAudio();
@@ -254,16 +258,22 @@ export function useScoreboard() {
       setMatch(newMatch);
       if (teamPhotos) setPhotos(teamPhotos);
 
-      // Intro → set ready + timer starts
-      voice.announceIntro(teamA, teamB, matchType, () => {
-        setMatch((prev) => ({
-          ...prev,
-          setReady: true,
-          startTime: prev.startTime || Date.now(),
-        }));
-      });
+      // Play the requested meme song first
+      playSpiderman();
+
+      // Delay so it plays right before voice
+      setTimeout(() => {
+        // Intro → set ready + timer starts
+        voice.announceIntro(teamA, teamB, matchType, () => {
+          setMatch((prev) => ({
+            ...prev,
+            setReady: true,
+            startTime: prev.startTime || Date.now(),
+          }));
+        });
+      }, 12000);
     },
-    [setMatch, setPhotos]
+    [setMatch, setPhotos, playSpiderman]
   );
 
   // ── Reset Match ──

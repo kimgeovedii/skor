@@ -5,13 +5,8 @@ import { setVoiceLanguage, getVoiceLanguage } from "@/services/voiceService";
 /**
  * Fixed top-right toolbar with language toggle.
  */
-export function TopBar({ isMatchStarted, isMatchOver, onResetMatch, onNewMatch }) {
+export function TopBar({ isMatchStarted, isMatchOver, onResetMatch, onNewMatch, onOpenManager }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [voiceLang, setVoiceLang] = useState(() => {
-    const saved = localStorage.getItem("voice-lang");
-    if (saved) { setVoiceLanguage(saved); return saved; }
-    return "en";
-  });
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -27,25 +22,16 @@ export function TopBar({ isMatchStarted, isMatchOver, onResetMatch, onNewMatch }
     }
   }, []);
 
-  const toggleLang = () => {
-    const next = voiceLang === "en" ? "id" : "en";
-    setVoiceLang(next);
-    setVoiceLanguage(next);
-    localStorage.setItem("voice-lang", next);
-  };
 
   return (
     <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
-      {/* Language toggle */}
       <button
-        onClick={toggleLang}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer text-xs font-bold"
-        title={`Voice: ${voiceLang === "en" ? "English" : "Indonesia"}`}
+        onClick={onOpenManager}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/80 hover:bg-white text-gray-800 border border-gray-200 shadow-sm transition-all cursor-pointer text-xs font-bold mr-2"
+        title="Ganti Turnamen"
       >
-        <Languages className="w-4 h-4" />
-        <span className="uppercase tracking-wider">{voiceLang === "en" ? "EN" : "ID"}</span>
+        Ganti Turnamen
       </button>
-
       {isMatchStarted && !isMatchOver && (
         <button
           onClick={onResetMatch}

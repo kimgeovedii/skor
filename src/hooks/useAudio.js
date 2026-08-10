@@ -4,6 +4,7 @@ import { BREAK_TRACKS } from "@/constants";
 const SOUND_DANA = "/audio/dana.mp3";
 const SOUND_REVISI = "/audio/chappelle-ah.mp3";
 const SOUND_CELEBRATE = "/audio/kicaw-habibi.mp3";
+const SOUND_SPIDERMAN = "/audio/spiderman-meme-song.mp3";
 
 /**
  * All audio playback — point, undo, celebration, + break music loop.
@@ -12,6 +13,7 @@ export function useAudio() {
   const danaRef = useRef(null);
   const revisiRef = useRef(null);
   const celebRef = useRef(null);
+  const spidermanRef = useRef(null);
   const breakAudioRef = useRef(null);
   const breakIndexRef = useRef(0);
   const isBreakPlayingRef = useRef(false);
@@ -23,6 +25,8 @@ export function useAudio() {
     revisiRef.current.volume = 1.0;
     celebRef.current = new Audio(SOUND_CELEBRATE);
     celebRef.current.volume = 1.0;
+    spidermanRef.current = new Audio(SOUND_SPIDERMAN);
+    spidermanRef.current.volume = 1.0;
   }, []);
 
   const playDana = useCallback(() => {
@@ -35,6 +39,10 @@ export function useAudio() {
 
   const playCelebrate = useCallback(() => {
     try { if (celebRef.current) { celebRef.current.currentTime = 0; celebRef.current.play().catch(() => {}); } } catch {}
+  }, []);
+
+  const playSpiderman = useCallback(() => {
+    try { if (spidermanRef.current) { spidermanRef.current.currentTime = 0; spidermanRef.current.play().catch(() => {}); } } catch {}
   }, []);
 
   // ── Break music loop ──
@@ -101,8 +109,12 @@ export function useAudio() {
   }, []);
 
   return { 
-    playDana, playRevisi, playCelebrate, 
-    startBreakMusic, stopBreakMusic,
+    playDana,
+    playRevisi,
+    playCelebrate,
+    playSpiderman,
+    startBreakMusic,
+    stopBreakMusic,
     duckBreakMusic, unduckBreakMusic 
   };
 }

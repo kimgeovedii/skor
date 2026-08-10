@@ -88,10 +88,22 @@ function processQueue() {
   }
   
   isSpeaking = true;
-  const { text, options } = queue.shift();
+  const item = queue.shift();
+
+  if (item.delay) {
+    setTimeout(() => {
+      isSpeaking = false;
+      processQueue();
+    }, item.delay);
+    return;
+  }
+
+  const { text, options } = item;
   speak(text, { ...options, onEnd: () => { isSpeaking = false; processQueue(); } });
 }
+
 function enqueue(text, options = {}) { queue.push({ text, options }); processQueue(); }
+function enqueuePause(delayMs) { queue.push({ delay: delayMs }); processQueue(); }
 
 export function clearVoiceQueue() {
   queue = []; isSpeaking = false; onQueueEmpty = null; introPlaying = false;
@@ -201,7 +213,8 @@ export function announceIntro(teamA, teamB, matchType, onIntroDone) {
     enqueue(`${teamA.name}, yang diwakili oleh ${pA}, melawan ${teamB.name}, yang diwakili oleh ${pB}.`, { rate: 0.95, pitch: 1.2 });
     enqueue(`Sebelum memulai, mari kita berdoa dulu menurut kepercayaan masing masing.`, { rate: 0.9, pitch: 1.1 });
     enqueue(`Berdoa dimulai.`, { rate: 0.85, pitch: 1.0 });
-    enqueue(`...`, { rate: 0.3, pitch: 0.5 });
+    enqueuePause(2000);
+    enqueue(`Berdoa selesai.`, { rate: 0.85, pitch: 1.0 });
     enqueue(`Ayo kita cek ombak!`, { rate: 1.0, pitch: 1.4 });
     enqueue(`Suporter ${teamA.name} mana suaranyaa!`, { rate: 1.0, pitch: 1.4 });
     enqueue(`${teamB.name} jangan kalah, mana suaranyaaa!`, { rate: 1.0, pitch: 1.4 });
@@ -210,7 +223,8 @@ export function announceIntro(teamA, teamB, matchType, onIntroDone) {
     enqueue(`The ${type} match is about to begin!`, { rate: 0.95, pitch: 1.3 });
     enqueue(`${teamA.name}, represented by ${pA}, versus ${teamB.name}, represented by ${pB}.`, { rate: 0.95, pitch: 1.2 });
     enqueue(`Before we start, let us have a moment of prayer.`, { rate: 0.9, pitch: 1.1 });
-    enqueue(`...`, { rate: 0.3, pitch: 0.5 });
+    enqueuePause(2000);
+    enqueue(`Prayer is over.`, { rate: 0.9, pitch: 1.1 });
     enqueue(`Let's check the crowd!`, { rate: 1.0, pitch: 1.4 });
     enqueue(`${teamA.name} supporters, let's hear you!`, { rate: 1.0, pitch: 1.4 });
     enqueue(`${teamB.name}, don't be quiet, make some noise!`, { rate: 1.0, pitch: 1.4 });
