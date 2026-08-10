@@ -1,6 +1,15 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Minus, RotateCcw, Maximize, Minimize, Trash2, UserPlus } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
+import { Plus, Minus, RotateCcw, Maximize, Minimize, Trash2, UserPlus, Settings } from 'lucide-react'
 
 const STORAGE_KEY = 'skor-turnamen-badminton'
 const SOUND_INCREMENT = '/audio/ssstik.io_1786355463088.mp3'
@@ -38,6 +47,57 @@ function ScorePop({ active }) {
 }
 
 /* ══════════════════════════════════════════════
+   EMPTY STATE — no teams yet
+   ══════════════════════════════════════════════ */
+function EmptyState({ onAddTeam }) {
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
+        <div className="px-8 py-16 md:py-20 text-center">
+          <div className="text-6xl mb-4">🏸</div>
+          <h2 className="text-white/80 text-lg md:text-xl font-bold mb-2">Belum Ada Tim</h2>
+          <p className="text-white/40 text-sm mb-6">Tambahkan minimal 2 tim untuk memulai pertandingan</p>
+          <button
+            onClick={onAddTeam}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <UserPlus className="w-5 h-5" />
+            Tambah Tim
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════
+   SINGLE TEAM STATE — need one more
+   ══════════════════════════════════════════════ */
+function SingleTeamState({ player, onAddTeam }) {
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5 relative">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
+        <div className="px-8 py-12 md:py-16 text-center">
+          <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-4">Tim Terdaftar</p>
+          <h2 className="text-white text-2xl md:text-3xl font-black tracking-wider uppercase mb-6">{player.name}</h2>
+          <p className="text-white/40 text-sm mb-6">Tambahkan 1 tim lagi untuk memulai</p>
+          <button
+            onClick={onAddTeam}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-red-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <UserPlus className="w-5 h-5" />
+            Tambah Tim Lawan
+          </button>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════
    FOOTBALL-STYLE SCOREBOARD (2 players)
    ══════════════════════════════════════════════ */
 function FootballScoreboard({ players, highestScore, hasWinner, animatingId, onIncrement, onDecrement }) {
@@ -46,23 +106,21 @@ function FootballScoreboard({ players, highestScore, hasWinner, animatingId, onI
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      {/* ── Main Scoreboard Panel ── */}
+      {/* Main Scoreboard Panel */}
       <div className="relative bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 border border-white/5">
-        {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
 
-        {/* Scoreboard Content */}
         <div className="relative px-4 md:px-8 py-6 md:py-8">
-          {/* Match info top bar */}
+          {/* Match label */}
           <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <span className="text-[0.6rem] md:text-xs font-bold tracking-[0.3em] text-amber-400/80 uppercase">Badminton Match</span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
 
-          {/* Main Score Display */}
+          {/* Score Display */}
           <div className="flex items-center justify-between gap-2 md:gap-4">
-            {/* Team A */}
+            {/* Team A Name */}
             <div className="flex-1 text-center">
               <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate">
                 {teamA.name}
@@ -92,7 +150,7 @@ function FootballScoreboard({ players, highestScore, hasWinner, animatingId, onI
                 </div>
               </div>
 
-              {/* VS Separator */}
+              {/* VS */}
               <div className="flex flex-col items-center gap-1">
                 <div className="w-px h-6 md:h-10 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
                 <span className="text-amber-400/70 text-xs md:text-sm font-black tracking-widest">VS</span>
@@ -121,7 +179,7 @@ function FootballScoreboard({ players, highestScore, hasWinner, animatingId, onI
               </div>
             </div>
 
-            {/* Team B */}
+            {/* Team B Name */}
             <div className="flex-1 text-center">
               <h2 className="text-white/90 text-sm md:text-xl font-extrabold tracking-wider uppercase truncate">
                 {teamB.name}
@@ -142,11 +200,10 @@ function FootballScoreboard({ players, highestScore, hasWinner, animatingId, onI
           )}
         </div>
 
-        {/* Bottom accent line */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500" />
       </div>
 
-      {/* ── Control Buttons (OUTSIDE scoreboard) ── */}
+      {/* Control Buttons (OUTSIDE scoreboard) */}
       <div className="flex items-stretch justify-between gap-4 mt-5 px-2 md:px-8">
         {/* Team A Controls */}
         <div className="flex-1 flex items-center justify-center gap-3">
@@ -200,25 +257,19 @@ function MultiTeamGrid({ players, highestScore, hasWinner, animatingId, onIncrem
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full max-w-4xl mx-auto">
       {players.map((player, idx) => (
         <div key={player.id} className="relative group">
-          {/* Remove button */}
-          {players.length > 2 && (
-            <button
-              onClick={() => onRemove(player.id)}
-              className="absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg"
-              title="Hapus tim"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            onClick={() => onRemove(player.id)}
+            className="absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg"
+            title="Hapus tim"
+          >
+            ✕
+          </button>
 
-          {/* Card */}
           <div className={`relative bg-gradient-to-br ${cardColors[idx % cardColors.length]} rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400/50 via-white/20 to-amber-400/50" />
             <div className="p-4 md:p-6 text-center">
               {hasWinner && player.score === highestScore && player.score > 0 && (
-                <div className="mb-1 animate-bounce">
-                  <span className="text-2xl">🏸</span>
-                </div>
+                <div className="mb-1 animate-bounce"><span className="text-2xl">🏸</span></div>
               )}
               <h3 className="text-white/80 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">{player.name}</h3>
               <div className="relative">
@@ -231,18 +282,13 @@ function MultiTeamGrid({ players, highestScore, hasWinner, animatingId, onIncrem
             </div>
           </div>
 
-          {/* Controls outside */}
           <div className="flex items-center justify-center gap-3 mt-3">
-            <button
-              onClick={() => onDecrement(player.id)}
-              className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
-            >
+            <button onClick={() => onDecrement(player.id)}
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer">
               <Minus className="w-5 h-5" />
             </button>
-            <button
-              onClick={() => onIncrement(player.id)}
-              className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
-            >
+            <button onClick={() => onIncrement(player.id)}
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-400/20 transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer">
               <Plus className="w-5 h-5" />
             </button>
           </div>
@@ -253,17 +299,73 @@ function MultiTeamGrid({ players, highestScore, hasWinner, animatingId, onIncrem
 }
 
 /* ══════════════════════════════════════════════
+   ADD TEAM DIALOG
+   ══════════════════════════════════════════════ */
+function AddTeamDialog({ open, onOpenChange, onAdd, teamCount }) {
+  const [name, setName] = useState('')
+  const remaining = 4 - teamCount
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    onAdd(name.trim())
+    setName('')
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-white border-red-100 shadow-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-red-700 text-lg flex items-center gap-2">
+            <UserPlus className="w-5 h-5" />
+            Tambah Tim Baru
+          </DialogTitle>
+          <DialogDescription>
+            Masukkan nama tim untuk ditambahkan ke pertandingan.
+            Sisa slot: <strong className="text-red-600">{remaining}</strong>
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Contoh: Tim Garuda"
+            autoFocus
+            className="w-full bg-red-50/50 border-2 border-red-100 rounded-xl px-4 py-3 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all"
+            id="input-team-name"
+          />
+
+          <DialogFooter className="gap-2">
+            <DialogClose>
+              <Button type="button" variant="outline" className="rounded-xl border-gray-200 cursor-pointer">
+                Batal
+              </Button>
+            </DialogClose>
+            <Button
+              type="submit"
+              disabled={!name.trim()}
+              className="bg-red-600 hover:bg-red-500 text-white rounded-xl px-6 cursor-pointer disabled:opacity-30 shadow-md shadow-red-200"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Tambah
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/* ══════════════════════════════════════════════
    MAIN APP
    ══════════════════════════════════════════════ */
 function App() {
-  const [players, setPlayers] = useLocalStorage(STORAGE_KEY, [
-    { id: 1, name: 'Tim A', score: 0, color: 'red' },
-    { id: 2, name: 'Tim B', score: 0, color: 'white' },
-  ])
-
-  const [newPlayerName, setNewPlayerName] = useState('')
+  const [players, setPlayers] = useLocalStorage(STORAGE_KEY, [])
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [animatingId, setAnimatingId] = useState(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const audioIncRef = useRef(null)
   const audioDecRef = useRef(null)
 
@@ -285,10 +387,7 @@ function App() {
   const playSound = useCallback((type) => {
     try {
       const audio = type === 'increment' ? audioIncRef.current : audioDecRef.current
-      if (audio) {
-        audio.currentTime = 0
-        audio.play().catch(() => {})
-      }
+      if (audio) { audio.currentTime = 0; audio.play().catch(() => {}) }
     } catch { /* ignore */ }
   }, [])
 
@@ -298,9 +397,7 @@ function App() {
   }, [])
 
   const handleIncrement = useCallback((id) => {
-    setPlayers(prev =>
-      prev.map(p => p.id === id ? { ...p, score: p.score + 1 } : p)
-    )
+    setPlayers(prev => prev.map(p => p.id === id ? { ...p, score: p.score + 1 } : p))
     playSound('increment')
     triggerAnimation(id)
   }, [playSound, triggerAnimation, setPlayers])
@@ -308,9 +405,7 @@ function App() {
   const handleDecrement = useCallback((id) => {
     const player = players.find(p => p.id === id)
     if (player && player.score <= 0) return
-    setPlayers(prev =>
-      prev.map(p => p.id === id ? { ...p, score: Math.max(0, p.score - 1) } : p)
-    )
+    setPlayers(prev => prev.map(p => p.id === id ? { ...p, score: Math.max(0, p.score - 1) } : p))
     playSound('decrement')
     triggerAnimation(id)
   }, [playSound, triggerAnimation, setPlayers, players])
@@ -321,25 +416,26 @@ function App() {
 
   const clearStorage = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY)
-    setPlayers([
-      { id: 1, name: 'Tim A', score: 0, color: 'red' },
-      { id: 2, name: 'Tim B', score: 0, color: 'white' },
-    ])
+    setPlayers([])
   }, [setPlayers])
 
-  const addPlayer = useCallback(() => {
-    if (!newPlayerName.trim() || players.length >= 4) return
+  const addPlayer = useCallback((name) => {
+    if (players.length >= 4) return
     setPlayers(prev => [
       ...prev,
-      { id: Date.now(), name: newPlayerName.trim(), score: 0, color: colorCycle[prev.length % colorCycle.length] },
+      { id: Date.now(), name, score: 0, color: colorCycle[prev.length % colorCycle.length] },
     ])
-    setNewPlayerName('')
-  }, [newPlayerName, players.length, setPlayers])
+    // Keep dialog open if fewer than 2 teams
+    if (players.length + 1 < 2) {
+      // will still need more teams
+    } else {
+      setDialogOpen(false)
+    }
+  }, [players.length, setPlayers])
 
   const removePlayer = useCallback((id) => {
-    if (players.length <= 2) return
     setPlayers(prev => prev.filter(p => p.id !== id))
-  }, [players.length, setPlayers])
+  }, [setPlayers])
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -349,17 +445,16 @@ function App() {
     }
   }, [])
 
-  const highestScore = Math.max(...players.map(p => p.score))
-  const hasWinner = highestScore > 0
-  const isTwoPlayers = players.length === 2
+  const highestScore = Math.max(...players.map(p => p.score), 0)
+  const hasWinner = highestScore > 0 && players.length >= 2
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 via-white to-red-50 text-gray-900 overflow-hidden relative">
-      {/* ── Decorative red stripes ── */}
+      {/* Decorative red stripes */}
       <div className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-red-500 to-red-600 z-40" />
       <div className="fixed bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-red-500 to-red-600 z-40" />
 
-      {/* Subtle bg shapes */}
+      {/* Background shapes */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-red-100/50 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-red-100/50 rounded-full blur-3xl" />
@@ -370,18 +465,29 @@ function App() {
       <div className="fixed top-2 left-4 text-2xl opacity-15 pointer-events-none z-30">🇮🇩</div>
       <div className="fixed top-2 right-14 text-2xl opacity-15 pointer-events-none z-30">🇮🇩</div>
 
-      {/* Fullscreen */}
-      <button
-        onClick={toggleFullscreen}
-        className="fixed top-3 right-4 z-50 p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
-        id="btn-fullscreen"
-        title={isFullscreen ? 'Keluar fullscreen' : 'Mode fullscreen'}
-      >
-        {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-      </button>
+      {/* Fullscreen + Settings buttons */}
+      <div className="fixed top-3 right-4 z-50 flex items-center gap-2">
+        {players.length < 4 && players.length >= 2 && (
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
+            title="Tambah tim"
+          >
+            <UserPlus className="w-5 h-5" />
+          </button>
+        )}
+        <button
+          onClick={toggleFullscreen}
+          className="p-2 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-200 text-red-600 hover:text-red-700 transition-all cursor-pointer"
+          id="btn-fullscreen"
+          title={isFullscreen ? 'Keluar fullscreen' : 'Mode fullscreen'}
+        >
+          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+        </button>
+      </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-5 md:py-8">
-        {/* ── Header ── */}
+        {/* Header */}
         <header className="text-center mb-6 md:mb-8">
           <div className="inline-flex flex-col items-center gap-1 mb-2">
             <div className="flex items-center gap-2">
@@ -412,8 +518,16 @@ function App() {
           </div>
         </header>
 
-        {/* ── Scoreboard ── */}
-        {isTwoPlayers ? (
+        {/* Scoreboard */}
+        {players.length === 0 && (
+          <EmptyState onAddTeam={() => setDialogOpen(true)} />
+        )}
+
+        {players.length === 1 && (
+          <SingleTeamState player={players[0]} onAddTeam={() => setDialogOpen(true)} />
+        )}
+
+        {players.length === 2 && (
           <FootballScoreboard
             players={players}
             highestScore={highestScore}
@@ -422,7 +536,9 @@ function App() {
             onIncrement={handleIncrement}
             onDecrement={handleDecrement}
           />
-        ) : (
+        )}
+
+        {players.length > 2 && (
           <MultiTeamGrid
             players={players}
             highestScore={highestScore}
@@ -434,34 +550,9 @@ function App() {
           />
         )}
 
-        {/* ── Bottom Controls ── */}
-        <div className="space-y-3 mt-8 max-w-2xl mx-auto">
-          {players.length < 4 && (
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-red-100 rounded-2xl p-3 shadow-sm">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <input
-                  type="text"
-                  value={newPlayerName}
-                  onChange={e => setNewPlayerName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addPlayer()}
-                  placeholder="Nama tim baru..."
-                  className="flex-1 bg-red-50/50 border-2 border-red-100 rounded-xl px-4 py-2 text-gray-800 text-sm placeholder:text-gray-400 focus:outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100 transition-all"
-                  id="input-player-name"
-                />
-                <Button
-                  onClick={addPlayer}
-                  disabled={!newPlayerName.trim()}
-                  className="bg-red-600 hover:bg-red-500 text-white rounded-xl px-5 cursor-pointer disabled:opacity-30 shadow-md shadow-red-200"
-                  id="btn-add-player"
-                >
-                  <UserPlus className="w-4 h-4 mr-1.5" />
-                  Tambah Tim
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
+        {/* Action buttons — only show when teams exist */}
+        {players.length >= 2 && (
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
             <Button
               onClick={resetAll}
               variant="outline"
@@ -478,17 +569,25 @@ function App() {
               id="btn-clear-storage"
             >
               <Trash2 className="w-4 h-4 mr-1.5" />
-              Hapus Data
+              Hapus Semua Tim
             </Button>
           </div>
-        </div>
+        )}
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <footer className="text-center mt-8 text-red-300 text-[0.65rem] space-y-0.5">
           <p>Data tersimpan otomatis di browser • Maksimal 4 tim</p>
           <p className="text-red-300/70 font-semibold tracking-wider">MERDEKA! 🇮🇩</p>
         </footer>
       </div>
+
+      {/* Add Team Dialog */}
+      <AddTeamDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onAdd={addPlayer}
+        teamCount={players.length}
+      />
     </div>
   )
 }
