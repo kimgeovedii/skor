@@ -394,12 +394,18 @@ export function useScoreboard(activeTournamentId) {
     voice.clearVoiceQueue();
     stopBreakVoiceLoop();
     stopBreakMusic();
+    
+    // Announce rubber set complaint if we are starting set 3
+    if (match.currentSet === 2) {
+      voice.announceRubberSet();
+    }
+    
     setMatch((prev) => ({
       ...prev,
       setReady: true,
       startTime: Date.now(),
     }));
-  }, [setMatch, stopBreakMusic, stopBreakVoiceLoop]);
+  }, [match.currentSet, setMatch, stopBreakMusic, stopBreakVoiceLoop]);
 
   // ── Derived state ──
   const currentSet = match.sets[match.currentSet] || { scoreA: 0, scoreB: 0 };

@@ -6,6 +6,7 @@ import {
   normalPoint, streakLeading, streakTrailing, comebackPoint, bigLeadPoint,
   closeFightPoint, tauntLines, tiedLines, trailingPoint, closingInPoint,
   longDeuceTied, longDeuceAdvantage, breakLines, breakPantun, pressPlayLines,
+  rubberSetLines
 } from "./voiceLines";
 
 // ── Language ──
@@ -240,6 +241,11 @@ export function announceIntro(teamA, teamB, matchType, onIntroDone) {
 export function announceEarlyPoint() {
   introPlaying = false;
   enqueue(pick(earlyPointLines[currentLang] || earlyPointLines.en), { rate: 1.0, pitch: 1.4 });
+}
+
+export function announceRubberSet() {
+  introPlaying = false;
+  enqueue(pick(rubberSetLines[currentLang] || rubberSetLines.en), { rate: 0.95, pitch: 1.2 });
 }
 
 /**

@@ -453,3 +453,21 @@ export const longDeuceAdvantage = {
     (s, o) => `I can't take much more of this! Advantage ${s}! ${o} needs a miracle right now!`,
   ],
 };
+
+// ── RUBBER SET COMPLAINTS (Set 3 starts) ──
+export const rubberSetLines = {
+  id: [
+    "Ya ampun sampai rubber set! Perasaan kok sampai set 3 terus, saya capek ngomong tolong jangan lama-lama mainnya ya saya mau bobok cantik ini!",
+    "Haduh set ketiga lagi! Plis deh jangan lama-lama mainnya, udah ngantuk berat nih pengen rebahan!",
+    "Lanjut set ketiga nih! Tolong dipercepat ya mainnya, suporter udah pada laper dan saya pengen cepet pulang!",
+    "Astaga rubber set! Kalian berdua tenaganya gak habis-habis ya? Ya udah deh, set penentuan nih, let's go!",
+    "Oke set penentuan! Janji ya jangan sampai deuce panjang lagi? Capek woy!",
+  ],
+  en: [
+    "Oh my goodness, a rubber set! Why does it always go to three sets? Please finish it quick, I need my beauty sleep!",
+    "Here we go again, set three! Please don't make this a marathon, I'm already exhausted from talking!",
+    "Third set it is! Let's wrap this up quickly, the crowd wants to go home and so do I!",
+    "A rubber set! Do you guys have infinite stamina? Alright, final set, let's get it over with!",
+    "Okay, deciding set! Promise me we won't have another long deuce? I'm tired!",
+  ],
+};
