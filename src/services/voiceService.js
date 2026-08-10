@@ -64,13 +64,29 @@ function speak(text, { rate = 1.0, pitch = 1.35, onEnd } = {}) {
 
 // ── Queue ──
 let queue = [], isSpeaking = false, onQueueEmpty = null;
+let globalOnVoiceStart = null;
+let globalOnVoiceEnd = null;
+
+export function setGlobalVoiceCallbacks(onStart, onEnd) {
+  globalOnVoiceStart = onStart;
+  globalOnVoiceEnd = onEnd;
+}
+
 function processQueue() {
   if (isSpeaking || queue.length === 0) {
-    if (!isSpeaking && queue.length === 0 && onQueueEmpty) {
-      const cb = onQueueEmpty; onQueueEmpty = null; cb();
+    if (!isSpeaking && queue.length === 0) {
+      if (globalOnVoiceEnd) globalOnVoiceEnd();
+      if (onQueueEmpty) {
+        const cb = onQueueEmpty; onQueueEmpty = null; cb();
+      }
     }
     return;
   }
+  
+  if (!isSpeaking && globalOnVoiceStart) {
+    globalOnVoiceStart();
+  }
+  
   isSpeaking = true;
   const { text, options } = queue.shift();
   speak(text, { ...options, onEnd: () => { isSpeaking = false; processQueue(); } });
@@ -80,6 +96,7 @@ function enqueue(text, options = {}) { queue.push({ text, options }); processQue
 export function clearVoiceQueue() {
   queue = []; isSpeaking = false; onQueueEmpty = null; introPlaying = false;
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if (globalOnVoiceEnd) globalOnVoiceEnd();
 }
 export function onVoiceDone(callback) {
   onQueueEmpty = callback;

@@ -42,7 +42,7 @@ export function useAudio() {
     if (!isBreakPlayingRef.current) return;
     const idx = breakIndexRef.current % BREAK_TRACKS.length;
     const audio = new Audio(BREAK_TRACKS[idx]);
-    audio.volume = 0.5; // background volume
+    audio.volume = 0.5; // Default background volume
     breakAudioRef.current = audio;
     audio.onended = () => {
       breakIndexRef.current = idx + 1;
@@ -74,6 +74,18 @@ export function useAudio() {
     }
   }, []);
 
+  const duckBreakMusic = useCallback(() => {
+    if (breakAudioRef.current) {
+      breakAudioRef.current.volume = 0.1; // lower volume for voice over
+    }
+  }, []);
+
+  const unduckBreakMusic = useCallback(() => {
+    if (breakAudioRef.current) {
+      breakAudioRef.current.volume = 0.5; // restore volume
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -85,5 +97,9 @@ export function useAudio() {
     };
   }, []);
 
-  return { playDana, playRevisi, playCelebrate, startBreakMusic, stopBreakMusic };
+  return { 
+    playDana, playRevisi, playCelebrate, 
+    startBreakMusic, stopBreakMusic,
+    duckBreakMusic, unduckBreakMusic 
+  };
 }

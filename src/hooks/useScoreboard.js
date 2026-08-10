@@ -14,13 +14,18 @@ export function useScoreboard() {
   const [photos, setPhotos] = useLocalStorage(PHOTOS_KEY, {});
   const [animatingTeam, setAnimatingTeam] = useState(null);
   const [bumper, setBumper] = useState(null);
-  const { playDana, playRevisi, playCelebrate, startBreakMusic, stopBreakMusic } = useAudio();
+  const { 
+    playDana, playRevisi, playCelebrate, 
+    startBreakMusic, stopBreakMusic,
+    duckBreakMusic, unduckBreakMusic 
+  } = useAudio();
   const breakVoiceTimerRef = useRef(null);
 
-  // Init voices on mount
+  // Init voices and callbacks on mount
   useEffect(() => {
     voice.initVoices();
-  }, []);
+    voice.setGlobalVoiceCallbacks(duckBreakMusic, unduckBreakMusic);
+  }, [duckBreakMusic, unduckBreakMusic]);
 
   const triggerAnimation = useCallback((team) => {
     setAnimatingTeam(team);
