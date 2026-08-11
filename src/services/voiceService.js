@@ -100,6 +100,15 @@ function processQueue() {
   }
 
   const { text, options } = item;
+  
+  if (options.audio) {
+    try {
+      const snd = new Audio(options.audio);
+      snd.volume = 1.0;
+      snd.play().catch(() => {});
+    } catch (e) {}
+  }
+  
   speak(text, { ...options, onEnd: () => { isSpeaking = false; processQueue(); } });
 }
 
@@ -263,7 +272,7 @@ export function announceConditionOnly(scorerName, opponentName, scoreA, scoreB, 
     case "streakLeading":
       line = pick(streakLeading[lang] || streakLeading.en)(scorerName, opponentName);
       enqueue(line, { pitch: 1.5 });
-      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3, audio: "/audio/guru-hentikan.mp3" });
       break;
     case "streakTrailing":
       line = pick(streakTrailing[lang] || streakTrailing.en)(scorerName, opponentName);
@@ -281,7 +290,7 @@ export function announceConditionOnly(scorerName, opponentName, scoreA, scoreB, 
     case "bigLead":
       line = pick(bigLeadPoint[lang] || bigLeadPoint.en)(scorerName, opponentName);
       enqueue(line, { pitch: 1.2 });
-      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3, audio: "/audio/guru-hentikan.mp3" });
       break;
     case "trailing":
       line = pick(trailingPoint[lang] || trailingPoint.en)(scorerName, opponentName);
@@ -316,7 +325,7 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
     case "streakLeading":
       line = pick(streakLeading[lang] || streakLeading.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.5 });
-      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3, audio: "/audio/guru-hentikan.mp3" });
       return;
 
     case "streakTrailing":
@@ -337,7 +346,7 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
     case "bigLead":
       line = pick(bigLeadPoint[lang] || bigLeadPoint.en)(scorerName, opponentName);
       enqueue(line + suffix, { pitch: 1.2 });
-      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3 });
+      enqueue(pick(tauntLines[lang] || tauntLines.en)(opponentName), { pitch: 1.3, audio: "/audio/guru-hentikan.mp3" });
       return;
 
     case "trailing":
