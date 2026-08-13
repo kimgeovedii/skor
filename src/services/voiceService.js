@@ -392,7 +392,7 @@ export function announceScore(scorerName, opponentName, teamAName, teamBName, sc
 export function announceScoreEqual(scorerName, opponentName, score, streak = 0) {
   const lang = currentLang;
   if (streak >= 3) {
-    const line = pick(streakPoint[lang] || streakPoint.en)(scorerName, opponentName);
+    const line = pick(streakLeading[lang] || streakLeading.en)(scorerName, opponentName);
     enqueue(`${line} ${sw(score)} ${lang === "id" ? "sama" : "all"}!`, { pitch: 1.5 });
   } else {
     const line = pick(tiedLines[lang] || tiedLines.en)(scorerName);

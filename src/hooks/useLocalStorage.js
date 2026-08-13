@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 
 /**
  * Persists state to localStorage with automatic sync.
- * Falls back to initialValue if storage read/write fails.
+ * Returns [value, setValue, valueRef] — valueRef always holds the latest value
+ * so it can be read synchronously even before React re-renders.
  */
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -14,13 +15,18 @@ export function useLocalStorage(key, initialValue) {
     }
   });
 
-  useEffect(() => {
+  const valueRef = useRef(value);
+
+  const setStoredValue = useCallback((newValue) => {
+    const resolved = typeof newValue === "function" ? newValue(valueRef.current) : newValue;
+    valueRef.current = resolved;
+    setValue(resolved);
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(key, JSON.stringify(resolved));
     } catch {
       // localStorage full or unavailable — silently ignore
     }
-  }, [key, value]);
+  }, [key]);
 
-  return [value, setValue];
+  return [value, setStoredValue, valueRef];
 }

@@ -14,9 +14,7 @@ export function useScoreboard(activeTournamentId) {
   const storageKey = `skor-turnamen-badminton-v2-${activeTournamentId}`;
   const photosKey = `skor-turnamen-photos-${activeTournamentId}`;
 
-  const [match, setMatch] = useLocalStorage(storageKey, createInitialMatch());
-  const matchRef = useRef(match);
-  useEffect(() => { matchRef.current = match; }, [match]);
+  const [match, setMatch, matchRef] = useLocalStorage(storageKey, createInitialMatch());
   
   const [photos, setPhotos] = useLocalStorage(photosKey, {});
   const [animatingTeam, setAnimatingTeam] = useState(null);
@@ -81,77 +79,66 @@ export function useScoreboard(activeTournamentId) {
   // ── Add Point ──
   const addPoint = useCallback(
     (team) => {
-      const currentMatch = matchRef.current;
-      if (currentMatch.matchWinner) return;
-
-      // Block if set not ready (waiting for Play button)
-      if (!currentMatch.setReady) {
+      // Read the LATEST state directly from the ref (always in sync)
+      const prev = matchRef.current;
+      if (prev.matchWinner) return;
+      if (!prev.setReady) {
         voice.announcePressPlay();
         return;
       }
 
-      const currentSet = currentMatch.sets[currentMatch.currentSet];
+      const currentSet = prev.sets[prev.currentSet];
       if (!currentSet) return;
 
-      // Calculate new scores based on the up-to-date ref
       const newScoreA = team === "a" ? currentSet.scoreA + 1 : currentSet.scoreA;
       const newScoreB = team === "b" ? currentSet.scoreB + 1 : currentSet.scoreB;
 
-      // Analyze the point
-      const analysis = analyzePoint(newScoreA, newScoreB, currentMatch.setsWon.a, currentMatch.setsWon.b, currentMatch.currentSet);
+      const analysis = analyzePoint(newScoreA, newScoreB, prev.setsWon.a, prev.setsWon.b, prev.currentSet);
       const scoringTeamName = getTeamName(team);
 
-      // Save history for undo
       const historyEntry = {
-        set: currentMatch.currentSet,
+        set: prev.currentSet,
         scoreA: currentSet.scoreA,
         scoreB: currentSet.scoreB,
-        server: currentMatch.server,
-        setsWon: { ...currentMatch.setsWon },
+        server: prev.server,
+        setsWon: { ...prev.setsWon },
       };
 
-      // Play dana.mp3 IMMEDIATELY (before voice-over)
+      // Play dana.mp3 IMMEDIATELY
       playDana();
       triggerAnimation(team);
       triggerBumper(team, scoringTeamName, getTeamPhotos(team));
 
-      // Was intro playing?
       const wasIntro = voice.isIntroPlaying();
-
-      // Clear queue at the start of ANY point so it interrupts immediately!
       voice.clearVoiceQueue();
 
-      // If intro is still playing, interrupt with "anjir belum apa-apa"
       if (wasIntro) {
         voice.announceEarlyPoint();
       }
 
-      // Calculate streak (consecutive points by same team)
+      // Calculate streak
       let streak = 1;
-      for (let i = currentMatch.history.length - 1; i >= 0; i--) {
-        const h = currentMatch.history[i];
-        if (h.set !== currentMatch.currentSet) break;
+      for (let i = prev.history.length - 1; i >= 0; i--) {
+        const h = prev.history[i];
+        if (h.set !== prev.currentSet) break;
         const previousScorer =
           currentSet.scoreA - h.scoreA > currentSet.scoreB - h.scoreB ? "a" : "b";
-        if (previousScorer === team) {
-          streak++;
-        } else {
-          break;
-        }
+        if (previousScorer === team) streak++;
+        else break;
       }
 
-      const teamAName = match.teamA.name;
-      const teamBName = match.teamB.name;
+      const teamAName = prev.teamA.name;
+      const teamBName = prev.teamB.name;
       const opponentName = team === "a" ? teamBName : teamAName;
 
       if (analysis.matchWon) {
         const winnerName = getTeamName(analysis.matchWinner);
         const winnerPlayers = getTeamPlayers(analysis.matchWinner);
-        voice.announceSetWon(winnerName, match.currentSet + 1, teamAName, teamBName, newScoreA, newScoreB);
+        voice.announceSetWon(winnerName, prev.currentSet + 1, teamAName, teamBName, newScoreA, newScoreB);
         voice.announceMatchWon(winnerName, winnerPlayers);
       } else if (analysis.setWon) {
         const winnerName = getTeamName(analysis.setWinner);
-        voice.announceSetWon(winnerName, match.currentSet + 1, teamAName, teamBName, newScoreA, newScoreB);
+        voice.announceSetWon(winnerName, prev.currentSet + 1, teamAName, teamBName, newScoreA, newScoreB);
         voice.announceCelebration();
       } else if (analysis.matchPointTeam) {
         voice.announceConditionOnly(scoringTeamName, opponentName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
@@ -170,56 +157,50 @@ export function useScoreboard(activeTournamentId) {
         voice.announceScore(scoringTeamName, opponentName, teamAName, teamBName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
       }
 
-      // Optimistically update the ref so the next click in the same render cycle sees the new score
-      const newSets = currentMatch.sets.map((s, i) => {
-        if (i === currentMatch.currentSet) {
+      // Build new state
+      const newSets = prev.sets.map((s, i) => {
+        if (i === prev.currentSet) {
           return { ...s, scoreA: newScoreA, scoreB: newScoreB, winner: analysis.setWinner };
         }
         return s;
       });
 
-      const newSetsWon = { ...currentMatch.setsWon };
-      let newCurrentSet = currentMatch.currentSet;
-      let newMatchWinner = currentMatch.matchWinner;
+      const newSetsWon = { ...prev.setsWon };
+      let newCurrentSet = prev.currentSet;
+      let newMatchWinner = prev.matchWinner;
 
       if (analysis.setWon && analysis.setWinner) {
         newSetsWon[analysis.setWinner] = (newSetsWon[analysis.setWinner] || 0) + 1;
-
         if (analysis.matchWon) {
           newMatchWinner = analysis.matchWinner;
-        } else if (currentMatch.currentSet < TOTAL_SETS - 1) {
-          newCurrentSet = currentMatch.currentSet + 1;
+        } else if (prev.currentSet < TOTAL_SETS - 1) {
+          newCurrentSet = prev.currentSet + 1;
         }
       }
 
       const nextMatch = {
-        ...currentMatch,
+        ...prev,
         sets: newSets,
         setsWon: newSetsWon,
         currentSet: newCurrentSet,
         matchWinner: newMatchWinner,
         server: getNextServer(team),
-        history: [...currentMatch.history, historyEntry],
+        history: [...prev.history, historyEntry],
+        startTime: wasIntro ? (prev.startTime || Date.now()) : prev.startTime,
         ...(analysis.setWon && !analysis.matchWon ? {
           setReady: false,
-          elapsedBeforePause: currentMatch.elapsedBeforePause + (currentMatch.startTime ? Math.floor((Date.now() - currentMatch.startTime) / 1000) : 0),
+          elapsedBeforePause: prev.elapsedBeforePause + (prev.startTime ? Math.floor((Date.now() - prev.startTime) / 1000) : 0),
           startTime: null,
         } : {}),
       };
 
-      // If intro was playing and interrupted, ensure startTime starts
-      if (wasIntro) {
-        nextMatch.startTime = nextMatch.startTime || Date.now();
-      }
-
-      matchRef.current = nextMatch;
+      // Update state — setMatch updates BOTH React state AND the ref synchronously
       setMatch(nextMatch);
 
-      // Start break music + voice loop if set won (not match won)
+      // Post-update side effects
       if (analysis.setWon && !analysis.matchWon) {
         voice.onVoiceDone(() => {
           playCelebrate();
-          // Start break music after celebration
           setTimeout(() => {
             startBreakMusic();
             startBreakVoiceLoop();
@@ -229,7 +210,7 @@ export function useScoreboard(activeTournamentId) {
         voice.onVoiceDone(() => playCelebrate());
       }
     },
-    [playDana, playCelebrate, startBreakMusic, triggerAnimation, triggerBumper, getTeamName, getTeamPlayers, getTeamPhotos, setMatch, startBreakVoiceLoop]
+    [matchRef, playDana, playCelebrate, startBreakMusic, triggerAnimation, triggerBumper, getTeamName, getTeamPlayers, getTeamPhotos, setMatch, startBreakVoiceLoop]
   );
 
   // ── Undo Point ──
