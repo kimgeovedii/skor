@@ -15,11 +15,15 @@ export function useScoreboard(activeTournamentId) {
   const photosKey = `skor-turnamen-photos-${activeTournamentId}`;
 
   const [match, setMatch] = useLocalStorage(storageKey, createInitialMatch());
+  const matchRef = useRef(match);
+  useEffect(() => { matchRef.current = match; }, [match]);
+  
   const [photos, setPhotos] = useLocalStorage(photosKey, {});
   const [animatingTeam, setAnimatingTeam] = useState(null);
   const [bumper, setBumper] = useState(null);
   const { 
     playDana, playRevisi, playCelebrate, playSpiderman,
+    startCrowdAudio, stopCrowdAudio,
     startBreakMusic, stopBreakMusic,
     duckBreakMusic, unduckBreakMusic 
   } = useAudio();
@@ -55,35 +59,55 @@ export function useScoreboard(activeTournamentId) {
     return team === "a" ? (photos.teamA || []) : (photos.teamB || []);
   }, [photos]);
 
+  const stopBreakVoiceLoop = useCallback(() => {
+    if (breakVoiceTimerRef.current) {
+      clearInterval(breakVoiceTimerRef.current);
+      clearTimeout(breakVoiceTimerRef.current);
+      breakVoiceTimerRef.current = null;
+    }
+  }, []);
+
+  // ── Break voice (plays once) ──
+  const startBreakVoiceLoop = useCallback(() => {
+    stopBreakVoiceLoop();
+    const playOnce = () => {
+      if (!match.teamA?.name || !match.teamB?.name) return;
+      voice.announceBreakLine(match.teamA.name, match.teamB.name);
+    };
+    // Play once after 5s
+    breakVoiceTimerRef.current = setTimeout(playOnce, 5000);
+  }, [match.teamA?.name, match.teamB?.name, stopBreakVoiceLoop]);
+
   // ── Add Point ──
   const addPoint = useCallback(
     (team) => {
-      if (match.matchWinner) return;
+      const currentMatch = matchRef.current;
+      if (currentMatch.matchWinner) return;
 
       // Block if set not ready (waiting for Play button)
-      if (!match.setReady) {
+      if (!currentMatch.setReady) {
         voice.announcePressPlay();
         return;
       }
 
-      const currentSet = match.sets[match.currentSet];
+      const currentSet = currentMatch.sets[currentMatch.currentSet];
       if (!currentSet) return;
 
-      // Calculate new scores
+      // Calculate new scores based on the up-to-date ref
       const newScoreA = team === "a" ? currentSet.scoreA + 1 : currentSet.scoreA;
       const newScoreB = team === "b" ? currentSet.scoreB + 1 : currentSet.scoreB;
 
       // Analyze the point
-      const analysis = analyzePoint(newScoreA, newScoreB, match.setsWon.a, match.setsWon.b, match.currentSet);
+      const analysis = analyzePoint(newScoreA, newScoreB, currentMatch.setsWon.a, currentMatch.setsWon.b, currentMatch.currentSet);
       const scoringTeamName = getTeamName(team);
 
       // Save history for undo
       const historyEntry = {
-        set: match.currentSet,
+        set: currentMatch.currentSet,
         scoreA: currentSet.scoreA,
         scoreB: currentSet.scoreB,
-        server: match.server,
-        setsWon: { ...match.setsWon },
+        server: currentMatch.server,
+        setsWon: { ...currentMatch.setsWon },
       };
 
       // Play dana.mp3 IMMEDIATELY (before voice-over)
@@ -100,31 +124,19 @@ export function useScoreboard(activeTournamentId) {
       // If intro is still playing, interrupt with "anjir belum apa-apa"
       if (wasIntro) {
         voice.announceEarlyPoint();
-        // Also start timer now since match has effectively begun
-        setMatch((prev) => ({
-          ...prev,
-          startTime: prev.startTime || Date.now(),
-        }));
       }
 
       // Calculate streak (consecutive points by same team)
       let streak = 1;
-      const history = match.history;
-      if (history.length > 0) {
-        // Check who scored previously by comparing score diffs
-        for (let i = history.length - 1; i >= 0; i--) {
-          const h = history[i];
-          const prevSet = match.sets[h.set];
-          if (!prevSet || h.set !== match.currentSet) break;
-          // Who scored at this history step? Compare with next state
-          const nextH = i < history.length - 1 ? history[i + 1] : { scoreA: currentSet.scoreA, scoreB: currentSet.scoreB };
-          const scoredA = (nextH.set === h.set) ? nextH.scoreA > h.scoreA : false;
-          const lastScorer = scoredA ? "a" : "b";
-          if (lastScorer === team) {
-            streak++;
-          } else {
-            break;
-          }
+      for (let i = currentMatch.history.length - 1; i >= 0; i--) {
+        const h = currentMatch.history[i];
+        if (h.set !== currentMatch.currentSet) break;
+        const previousScorer =
+          currentSet.scoreA - h.scoreA > currentSet.scoreB - h.scoreB ? "a" : "b";
+        if (previousScorer === team) {
+          streak++;
+        } else {
+          break;
         }
       }
 
@@ -158,46 +170,50 @@ export function useScoreboard(activeTournamentId) {
         voice.announceScore(scoringTeamName, opponentName, teamAName, teamBName, newScoreA, newScoreB, streak, team, currentSet.scoreA, currentSet.scoreB);
       }
 
-
-      // Update state
-      setMatch((prev) => {
-        const newSets = prev.sets.map((s, i) => {
-          if (i === prev.currentSet) {
-            return { ...s, scoreA: newScoreA, scoreB: newScoreB, winner: analysis.setWinner };
-          }
-          return s;
-        });
-
-        const newSetsWon = { ...prev.setsWon };
-        let newCurrentSet = prev.currentSet;
-        let newMatchWinner = prev.matchWinner;
-
-        if (analysis.setWon && analysis.setWinner) {
-          newSetsWon[analysis.setWinner] = (newSetsWon[analysis.setWinner] || 0) + 1;
-
-          if (analysis.matchWon) {
-            newMatchWinner = analysis.matchWinner;
-          } else if (prev.currentSet < TOTAL_SETS - 1) {
-            newCurrentSet = prev.currentSet + 1;
-          }
+      // Optimistically update the ref so the next click in the same render cycle sees the new score
+      const newSets = currentMatch.sets.map((s, i) => {
+        if (i === currentMatch.currentSet) {
+          return { ...s, scoreA: newScoreA, scoreB: newScoreB, winner: analysis.setWinner };
         }
-
-        return {
-          ...prev,
-          sets: newSets,
-          setsWon: newSetsWon,
-          currentSet: newCurrentSet,
-          matchWinner: newMatchWinner,
-          server: getNextServer(team),
-          history: [...prev.history, historyEntry],
-          // Pause set on set win (not match win)
-          ...(analysis.setWon && !analysis.matchWon ? {
-            setReady: false,
-            elapsedBeforePause: prev.elapsedBeforePause + (prev.startTime ? Math.floor((Date.now() - prev.startTime) / 1000) : 0),
-            startTime: null,
-          } : {}),
-        };
+        return s;
       });
+
+      const newSetsWon = { ...currentMatch.setsWon };
+      let newCurrentSet = currentMatch.currentSet;
+      let newMatchWinner = currentMatch.matchWinner;
+
+      if (analysis.setWon && analysis.setWinner) {
+        newSetsWon[analysis.setWinner] = (newSetsWon[analysis.setWinner] || 0) + 1;
+
+        if (analysis.matchWon) {
+          newMatchWinner = analysis.matchWinner;
+        } else if (currentMatch.currentSet < TOTAL_SETS - 1) {
+          newCurrentSet = currentMatch.currentSet + 1;
+        }
+      }
+
+      const nextMatch = {
+        ...currentMatch,
+        sets: newSets,
+        setsWon: newSetsWon,
+        currentSet: newCurrentSet,
+        matchWinner: newMatchWinner,
+        server: getNextServer(team),
+        history: [...currentMatch.history, historyEntry],
+        ...(analysis.setWon && !analysis.matchWon ? {
+          setReady: false,
+          elapsedBeforePause: currentMatch.elapsedBeforePause + (currentMatch.startTime ? Math.floor((Date.now() - currentMatch.startTime) / 1000) : 0),
+          startTime: null,
+        } : {}),
+      };
+
+      // If intro was playing and interrupted, ensure startTime starts
+      if (wasIntro) {
+        nextMatch.startTime = nextMatch.startTime || Date.now();
+      }
+
+      matchRef.current = nextMatch;
+      setMatch(nextMatch);
 
       // Start break music + voice loop if set won (not match won)
       if (analysis.setWon && !analysis.matchWon) {
@@ -213,7 +229,7 @@ export function useScoreboard(activeTournamentId) {
         voice.onVoiceDone(() => playCelebrate());
       }
     },
-    [match, playDana, playCelebrate, startBreakMusic, triggerAnimation, triggerBumper, getTeamName, getTeamPlayers, getTeamPhotos, setMatch]
+    [playDana, playCelebrate, startBreakMusic, triggerAnimation, triggerBumper, getTeamName, getTeamPlayers, getTeamPhotos, setMatch, startBreakVoiceLoop]
   );
 
   // ── Undo Point ──
@@ -354,27 +370,7 @@ export function useScoreboard(activeTournamentId) {
     [setPhotos]
   );
 
-  // ── Break voice loop ──
-  const startBreakVoiceLoop = useCallback(() => {
-    stopBreakVoiceLoop();
-    const loop = () => {
-      if (!match.teamA?.name || !match.teamB?.name) return;
-      voice.announceBreakLine(match.teamA.name, match.teamB.name);
-    };
-    // First one after 5s, then every 15s
-    breakVoiceTimerRef.current = setTimeout(() => {
-      loop();
-      breakVoiceTimerRef.current = setInterval(loop, 15000);
-    }, 5000);
-  }, [match.teamA?.name, match.teamB?.name]);
 
-  const stopBreakVoiceLoop = useCallback(() => {
-    if (breakVoiceTimerRef.current) {
-      clearInterval(breakVoiceTimerRef.current);
-      clearTimeout(breakVoiceTimerRef.current);
-      breakVoiceTimerRef.current = null;
-    }
-  }, []);
 
   // ── Resume break state on mount (after refresh) ──
   useEffect(() => {
@@ -417,6 +413,16 @@ export function useScoreboard(activeTournamentId) {
     match.currentSet
   );
   const isOnBreak = match.isStarted && !match.setReady && !match.matchWinner;
+  const isMatchActive = match.isStarted && match.setReady && !match.matchWinner;
+
+  // ── Auto Crowd Audio ──
+  useEffect(() => {
+    if (isMatchActive) {
+      startCrowdAudio();
+    } else {
+      stopCrowdAudio();
+    }
+  }, [isMatchActive, startCrowdAudio, stopCrowdAudio]);
 
   return {
     match,

@@ -65,6 +65,7 @@ function speak(text, { rate = 1.0, pitch = 1.35, onEnd } = {}) {
 
 // ── Queue ──
 let queue = [], isSpeaking = false, onQueueEmpty = null;
+let activeAudios = 0;
 let globalOnVoiceStart = null;
 let globalOnVoiceEnd = null;
 
@@ -74,14 +75,16 @@ export function setGlobalVoiceCallbacks(onStart, onEnd) {
 }
 
 function processQueue() {
-  if (isSpeaking || queue.length === 0) {
-    if (!isSpeaking && queue.length === 0) {
+  if (isSpeaking || queue.length === 0 || activeAudios > 0) {
+    if (!isSpeaking && queue.length === 0 && activeAudios === 0) {
       if (globalOnVoiceEnd) globalOnVoiceEnd();
       if (onQueueEmpty) {
         const cb = onQueueEmpty; onQueueEmpty = null; cb();
       }
     }
-    return;
+    // Only return early if we are actively speaking or queue is empty.
+    // If activeAudios > 0 but queue has items, we SHOULD continue processing the queue!
+    if (isSpeaking || queue.length === 0) return;
   }
   
   if (!isSpeaking && globalOnVoiceStart) {
@@ -105,7 +108,10 @@ function processQueue() {
     try {
       const snd = new Audio(options.audio);
       snd.volume = 1.0;
-      snd.play().catch(() => {});
+      activeAudios++;
+      snd.onended = () => { activeAudios--; processQueue(); };
+      snd.onerror = () => { activeAudios--; processQueue(); };
+      snd.play().catch(() => { activeAudios--; processQueue(); });
     } catch (e) {}
   }
   
@@ -116,7 +122,7 @@ function enqueue(text, options = {}) { queue.push({ text, options }); processQue
 function enqueuePause(delayMs) { queue.push({ delay: delayMs }); processQueue(); }
 
 export function clearVoiceQueue() {
-  queue = []; isSpeaking = false; onQueueEmpty = null; introPlaying = false;
+  queue = []; isSpeaking = false; onQueueEmpty = null; introPlaying = false; activeAudios = 0;
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   if (globalOnVoiceEnd) globalOnVoiceEnd();
 }

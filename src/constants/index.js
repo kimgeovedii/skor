@@ -10,9 +10,6 @@ export const SOUND_UNDO = "/audio/fahhhhhhhhhhhhhh.mp3";
 export const BREAK_TRACKS = [
   "/audio/break1.mp3",
   "/audio/break2.mp3",
-  "/audio/break3.mp3",
-  "/audio/break4.mp3",
-  "/audio/break5.mp3",
 ];
 
 // ── Images ──
